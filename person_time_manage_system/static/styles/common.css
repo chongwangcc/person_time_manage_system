@@ -197,21 +197,6 @@ a:hover{
     background-image: url("../images/nav_3.png");
 
 }
-.nav_4{
-    background-image: url("../img/nav_4.png");
-}
-.nav_5{
-    background-image: url("../img/nav_5.png");
-}
-.nav_6{
-    background-image: url("../img/nav_6.png");
-}
-.nav_7{
-    background-image: url("../img/nav_7.png");
-}
-.nav_8{
-    background-image: url("../img/nav_9.png");
-}
 .nav_active{
     border-bottom: 4px solid #4b8df8;
     box-shadow: -10px 0px 15px #034c6a inset, /*å·¦è¾¹é˜´å½±*/
@@ -428,9 +413,9 @@ a:hover{
 .table_p{
     height: 93%;
     margin-top: 7%;
+    margin-left: 4%;
     position: relative;
-
-
+    overflow:scroll;
 }.table_p01{
      height:auto !important;
      margin-top: 0!important;
@@ -443,9 +428,8 @@ a:hover{
 }
 .table_p table{
     width: 100%;
-    height: 100%;
+    height: 5%;
     border-collapse: collapse;
-
     position: absolute;
     text-align: center;
 }
@@ -458,12 +442,17 @@ a:hover{
 }
 .table_p table tbody{
     color: #ffffff;
-   font-size: 13px;
+    font-size: 13px;
+
 }
+
 .table_p table tbody tr:nth-child(2n+1){
     background-color: #072951;
     box-shadow: -10px 0px 15px #034c6a inset,
     10px 0px 15px #034c6a inset;
+}
+.table_p table tbody tr{
+    height:30px
 }
 
 .car_left{
@@ -512,42 +501,13 @@ a:hover{
     border:1px solid #072951;
 border-radius: 3px;
 }
-.find_but{
-    height: 25px;
-    background-image: url("../img/find.png");
-    width: 25px;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    position: relative;
-    top:8px;
-    border:none;
-    background-color: transparent;
-}
-.find_but1{
-    height: 25px;
-    background-image: url("../img/find.png");
-    width: 25px;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    position: relative;
-    top:8px;
-    border:1px solid #4b8df8;
-    background-color: transparent;
-}
+
 .set_list{
     padding: 10px 5%;
     color: #eee;
     font-size: 14px;
 }
-.list_i{
-    width: 16px;
-    height: 16px;
-    display: inline-block;
 
-    background-image: url("../img/nav_1.png");
-    top:3px;
-    position: relative;
-}
 .left_up{
 
     height: 58%;
@@ -926,16 +886,6 @@ border-radius: 3px;
     margin: 0 auto;
 
 }
-.img_div01{
-
-    background: url(../img/map_photo.png) no-repeat;
-    background-position: -126px -73px;
-}
-.img_div02{
-    background: url(../img/map_photo.png) no-repeat;
-    background-position:  -98px -122px;
-
-}
 .img_div_text{
     color: #FFFFff;
     margin-top: 8px;
@@ -982,16 +932,6 @@ border-radius: 3px;
     border-radius: 1px;
     box-shadow: 0px 3px 3px #61d2f7;
 
-}
-.static_top i{
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    position: relative;
-    background-image: url("../img/nav_7.png");
-    background-repeat: no-repeat;
-    margin-right: 6px;
-    top:1px;
 }
 .static_top span{
     color: #25f3e6;

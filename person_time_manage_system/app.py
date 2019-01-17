@@ -47,7 +47,36 @@ def each_category_hours(my_date):
     return jsonify(result)
 
 
+@app.route("/all_category_every_day_hours/<my_date>", methods=["GET"])
+def all_category_every_day_hours(my_date):
+    result = {
+        "xData":[" 星期1"," 星期2"," 星期3"," 星期4"," 星期5"," 星期6"," 星期日"],
+        "legends": ["睡觉", '学习', '杂', " 工作", " 运动", " 娱乐"],
+        # 每个类别，每一天的时间，shape==（lengends.长度  *  xData.长度）
+        "data":[
+            [1,2,3,4,5,6,7],
+            [8,9,10,11,12,13,14],
+            [15,16,17,18,19,20,21],
+            [1, 2, 3, 4, 5, 6, 7],
+            [8, 9, 10, 11, 12, 13, 14],
+            [15, 16, 17, 18, 19, 20, 21],
+        ],
+        "sum":[15, 16, 17, 18, 19, 20, 21]
+    }
+    return jsonify(result)
 
+@app.route("/missing_period/<my_date>", methods=["GET"])
+def missing_period(my_date):
+    result = [
+            {"start_time":"1-12 ","end_time":'1-12 12：00',"during":'1.5',"type":"重叠"},
+        {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
+        {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
+        {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
+        {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
+        {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
+            ]
+
+    return jsonify(result)
 
 @app.route("/", methods=["GET"])
 def index():
