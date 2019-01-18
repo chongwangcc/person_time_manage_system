@@ -7,6 +7,45 @@ import re
 from tools import GoogleAuth
 
 
+def calc_missing_during(list_result):
+    """
+    计算 遗漏/重叠 时段
+    :param list_result:
+    :return:
+    """
+    if list_result is None or len(list_result) < 2:
+        return []
+    missing_during = []
+    last_one = datetime.datetime.strptime(list_result[0][1]+" "+list_result[0][4], '%Y-%m-%d %H:%M:%S')
+    for t_time in list_result[1:]:
+        print(t_time)
+        s_time = datetime.datetime.strptime(t_time[7] + " " + t_time[3], '%Y-%m-%d %H:%M:%S')
+        if (t_time[7] + " " + t_time[3]) in ["2019-01-18 09:15:00"]:
+            print()
+        if (s_time - last_one).total_seconds() < 60 and (last_one - s_time).total_seconds() < 60:
+            pass
+        elif s_time < last_one:
+            # 重叠
+            e_time_str = last_one.strftime("%m-%d %H:%M")
+            s_time_str = s_time.strftime("%m-%d %H:%M")
+            minute = round((last_one-s_time).total_seconds()/60, 2)
+            info = "重叠"
+            t_d = {"start_time": s_time_str, "end_time": e_time_str, "during": minute, "type": info}
+            missing_during.append(t_d)
+        else:
+            # 漏掉
+            e_time_str = s_time.strftime("%m-%d %H:%M")
+            s_time_str = last_one.strftime("%m-%d %H:%M")
+            minute = round((s_time - last_one).total_seconds() / 60, 2)
+            info = "漏掉"
+            t_d = {"start_time": s_time_str, "end_time": e_time_str, "during": minute, "type": info}
+            missing_during.append(t_d)
+
+        last_one = datetime.datetime.strptime(t_time[8] + " " + t_time[4], '%Y-%m-%d %H:%M:%S')
+        pass
+    return missing_during
+
+
 def standard_content_list(min_time_str, max_time_str, list_result):
     """
     将日历数据标准化，方便下一步计算
@@ -25,6 +64,7 @@ def standard_content_list(min_time_str, max_time_str, list_result):
         content = list_one[2]
 
         start_date_str = start_time[:10]
+        org_start_date_str = start_date_str
         start_time_str = start_time[11:19]
         end_data_str = end_time[0:10]
         end_time_str = end_time[11:19]
@@ -39,7 +79,7 @@ def standard_content_list(min_time_str, max_time_str, list_result):
         days_delta_total = (datetime.datetime.strptime(end_data_str,'%Y-%m-%d')\
                            -datetime.datetime.strptime(start_date_str,'%Y-%m-%d')).days
 
-        for day_delta in range(0,days_delta_total+1):
+        for day_delta in range(0, days_delta_total+1):
             t_start_datetime = datetime.datetime(year=(date_s + datetime.timedelta(days=day_delta)).year,
                                                  month=(date_s + datetime.timedelta(days=day_delta)).month,
                                                  day=(date_s + datetime.timedelta(days=day_delta)).day,
@@ -53,27 +93,29 @@ def standard_content_list(min_time_str, max_time_str, list_result):
 
             if day_delta == days_delta_total:
                 t_end_datetime = date_e
-            start_date_str = datetime.datetime.strftime(t_start_datetime,'%Y-%m-%d')
+            t_start_date_str = datetime.datetime.strftime(t_start_datetime, '%Y-%m-%d')
 
-            if start_date_str < min_time_str or start_date_str >= max_time_str:
+            if t_start_date_str < min_time_str or t_start_date_str >= max_time_str:
                 continue
 
             #记录在同一天
-            date_set.add(start_date_str)
+            date_set.add(t_start_date_str)
             temp_list=[]
-            date1=datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+            date1=datetime.datetime.strptime(t_start_date_str, '%Y-%m-%d')
             weeknum=date1.weekday() #获得 星期几
             #获得时间差
             delta=t_end_datetime-t_start_datetime
             #保存数据到列表中
             temp_list.append(type)
-            temp_list.append(start_date_str)
+            temp_list.append(t_start_date_str)
             temp_list.append(weeknum)
-            temp_list.append(start_time_str)
-            temp_list.append(end_time_str)
+            temp_list.append(t_start_datetime.strftime("%H:%M:%S"))
+            temp_list.append(t_end_datetime.strftime("%H:%M:%S"))
             temp_list.append(delta)
             temp_list.append(str(delta))
-            temp_list.append(str(delta + delta))
+            temp_list.append(t_start_datetime.strftime("%Y-%m-%d"))
+            temp_list.append(t_end_datetime.strftime("%Y-%m-%d"))
+            # temp_list.append(str(delta + delta))
             #print(repr(temp_list))
 
             result_list.append(temp_list)
@@ -172,15 +214,18 @@ def get_sum_list(user_name, min_date_str, max_date_str):
     #时间日志列表
     service = GoogleAuth.get_service(user_name)
     calendar_id = GoogleAuth.get_calender_id(service, u"时间日志")
-    time_list=GoogleAuth.get_calender_content(service,calendar_id,time_min,time_max)
-    time_list,type_list,date_list=standard_content_list(min_date_str, max_date_str, time_list)
+    time_list = GoogleAuth.get_calender_content(service, calendar_id, time_min, time_max)
+    time_list, type_list, date_list = standard_content_list(min_date_str, max_date_str, time_list)
+
+    # 计算重叠、遗漏时段
+    missing_info = calc_missing_during(time_list)
 
     #统计时间
-    result_list=gen_sum_list(time_list,type_list,date_list)
-    return result_list,type_list,date_list
+    result_list = gen_sum_list(time_list, type_list, date_list)
+    return result_list, missing_info
 
 
-def get_tomato_nums(result_list, label="工作", each_tomato_minutes=30 ):
+def get_tomato_nums(result_list, label="工作", each_tomato_minutes=30):
     """
     获得 番茄始时钟数
     :param result_list:
@@ -263,6 +308,7 @@ def get_every_day_category_details(result_list, day_padding=7):
     :param day_padding: 日期不够长时，加长日期
     :return:
     """
+    # TODO 按照day_padding 补充日期
     xData = result_list[0][1:-1]
     sum = [round(x.total_seconds()/3600, 2) for x in result_list[-1][1:-2]]
     data = []
@@ -278,7 +324,7 @@ def get_every_day_category_details(result_list, day_padding=7):
 
     every_day_sum=[]
     for t_list in result_list[1:-1]:
-        every_day_sum.append([ round(t.total_seconds()/3600,2) for t in t_list[1:-1]])
+        every_day_sum.append([round(t.total_seconds()/3600,2) for t in t_list[1:-1]])
 
     result = {
         "xData": xData,
@@ -296,15 +342,8 @@ def get_every_day_category_details(result_list, day_padding=7):
 
 
 if __name__ == "__main__":
-    result_list, type_list, date_list = get_sum_list("mm", "2019-01-13", "2019-01-19")
-    print(result_list)
-    print(type_list)
-    print(date_list)
-    tomato_nums = get_tomato_nums(result_list)
-    print(tomato_nums)
-    tomato_nums = get_tomato_nums(result_list, label="学习")
-    print(tomato_nums)
-    _nums = get_nums(result_list, label="锻炼")
-    print(_nums)
+    result_list, missing_info = get_sum_list("mm", "2019-01-13", "2019-01-19")
+
+
 
 

@@ -11,7 +11,7 @@ from datetime import datetime,timedelta
 from tools import TimeSum
 
 app = Flask(__name__)
-g_user_name="mm"
+g_user_name="cc"
 
 def calc_week_begin_end_date(date_str):
     """
@@ -39,7 +39,7 @@ def weekly_statistics(date_str):
     # TODO 登陆验证函数
     user_name = g_user_name
     monday, sunday = calc_week_begin_end_date(date_str)
-    result_list, type_list, date_list = TimeSum.get_sum_list(user_name, "2019-01-13", "2019-01-19")
+    result_list, missing_info = TimeSum.get_sum_list(user_name, "2019-01-13", "2019-01-19")
     # 构造返回结果
     result = {}
     # 1.开始结束日期 工作-学习番茄数 锻炼娱乐次数
@@ -66,14 +66,8 @@ def weekly_statistics(date_str):
     result["each_category_time_sum"] = TimeSum.get_all_category_time_sum(result_list)
 
     # 6. 漏填、充填时段
-    result["missing_info"] = [
-                {"start_time":"1-12 ","end_time":'1-12 12：00',"during":'1.5',"type":"重叠"},
-                {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
-                {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
-                {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
-                {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
-                {"start_time": "1-12 ", "end_time": '1-12 12：00', "during": '1.5', "type": "重叠"},
-            ]
+    print(missing_info)
+    result["missing_info"] = missing_info
     return jsonify(result)
 
 

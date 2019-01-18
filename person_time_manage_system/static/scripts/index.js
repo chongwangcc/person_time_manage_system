@@ -567,7 +567,6 @@ function init3(id_str, data){
 
         var seriesObj = []
 
-        console.log(xData)
         for(var i=0;i<xData.length;i++){
             var t_series = gen_label(legendData[i],all_data_list[i],corlor_list[i])
             seriesObj.push(t_series)
@@ -780,10 +779,10 @@ function init4(id_str, data1){
 function init5(id_str, data){
         var tbody =document.getElementById(id_str);
         var info = data;
+        console.log(data)
         for(var i = 0;i < info.length; i++) { //遍历一下json数据
             var trow = getDataRow(info[i]); //定义一个方法,返回tr数据
             tbody.appendChild(trow);
-
         }
         function getDataRow(h){
          var row = document.createElement('tr'); //创建行
