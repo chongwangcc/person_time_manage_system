@@ -7,6 +7,8 @@
 # @Software: PyCharm
 
 from flask import Flask, render_template, json, jsonify, request
+from tools import timeSum
+
 app = Flask(__name__)
 
 
