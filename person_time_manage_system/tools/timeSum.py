@@ -180,12 +180,4 @@ def getSumList(user_name,time_min_str,time_max_str):
 def print_test():
     print("import testsuccess")
 
-def main():
-    #生成要获得数据的时间
-    result_list, type_list, date_list = getSumList("2018-11-18","2018-11-25")
-    print(result_list)
-    pass
 
-
-if __name__ == '__main__':
-    main()
