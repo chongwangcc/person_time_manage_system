@@ -18,7 +18,6 @@ def calc_missing_during(list_result):
     missing_during = []
     last_one = datetime.datetime.strptime(list_result[0][1]+" "+list_result[0][4], '%Y-%m-%d %H:%M:%S')
     for t_time in list_result[1:]:
-        print(t_time)
         s_time = datetime.datetime.strptime(t_time[7] + " " + t_time[3], '%Y-%m-%d %H:%M:%S')
         if (t_time[7] + " " + t_time[3]) in ["2019-01-18 09:15:00"]:
             print()
