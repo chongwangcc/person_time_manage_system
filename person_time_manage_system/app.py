@@ -61,12 +61,12 @@ def weekly_statistics(date_str):
 
     # 4. 各项每天时间汇总
     result["every_day_category_details"] = TimeSum.get_every_day_category_details(result_list, day_padding=7)
+    print(result["every_day_category_details"])
 
     # 5. 类别 时间汇总
     result["each_category_time_sum"] = TimeSum.get_all_category_time_sum(result_list)
 
     # 6. 漏填、充填时段
-    print(missing_info)
     result["missing_info"] = missing_info
     return jsonify(result)
 

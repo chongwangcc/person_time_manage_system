@@ -567,7 +567,7 @@ function init3(id_str, data){
 
         var seriesObj = []
 
-        for(var i=0;i<xData.length;i++){
+        for(var i=0;i<legendData.length;i++){
             var t_series = gen_label(legendData[i],all_data_list[i],corlor_list[i])
             seriesObj.push(t_series)
         }
