@@ -7,14 +7,12 @@ import re
 from tools import GoogleAuth
 
 
-def _calc_record(start_date_str, start_time_str, end_data_str, end_time_str, content):
-    pass
-
-
-def standard_content_list(time_min_str,time_max_str,list_result):
+def standard_content_list(min_time_str, max_time_str, list_result):
     """
     将日历数据标准化，方便下一步计算
     [星期几，类别，开始时间，结束时间]
+    :param min_time_str:
+    :param max_time_str:
     :param list_result:
     :return:
     """
@@ -56,7 +54,7 @@ def standard_content_list(time_min_str,time_max_str,list_result):
                 t_end_datetime = date_e
             start_date_str = datetime.datetime.strftime(t_start_datetime,'%Y-%m-%d')
 
-            if start_date_str < time_min_str or start_date_str >= time_max_str:
+            if start_date_str < min_time_str or start_date_str >= max_time_str:
                 continue
 
             #记录在同一天
@@ -81,7 +79,8 @@ def standard_content_list(time_min_str,time_max_str,list_result):
 
     return result_list,list(type_set),list(date_set)
 
-def gen_sum_list(time_list,type_list,date_list):
+
+def gen_sum_list(time_list, type_list, date_list):
     """
     统计时间打印输出
     :param time_list:
@@ -140,7 +139,8 @@ def gen_sum_list(time_list,type_list,date_list):
     result_list.append(temp_list)
     return result_list
 
-def sumListToStr(sum_list):
+
+def sum_list_to_str(sum_list):
     """
     将统计列表转换为字符串
     :param sum_list:
@@ -152,32 +152,35 @@ def sumListToStr(sum_list):
                 sum_list[i][j]=str(sum_list[i][j])[:-3]
     return sum_list
 
-def getSumList(user_name,time_min_str,time_max_str):
+
+def get_sum_list(user_name, min_date_str, max_date_str):
     """
     根据日期，生成 时间的统计结果
-    :param time_min_str:
-    :param time_max_str:
+    :param user_name:
+    :param min_date_str:
+    :param max_date_str:
     :return:
     """
-    naive = datetime.datetime.strptime(time_min_str+" 0:0:0", "%Y-%m-%d %H:%M:%S")
+    naive = datetime.datetime.strptime(min_date_str + " 0:0:0", "%Y-%m-%d %H:%M:%S")
     naive=naive-datetime.timedelta(hours=8)
     time_min = naive.isoformat() + 'Z'
-    naive = datetime.datetime.strptime(time_max_str+" 0:0:0", "%Y-%m-%d %H:%M:%S")
+    naive = datetime.datetime.strptime(max_date_str + " 0:0:0", "%Y-%m-%d %H:%M:%S")
     naive=naive-datetime.timedelta(hours=8)
     time_max = naive.isoformat() + 'Z'
 
     #时间日志列表
     service = GoogleAuth.get_service(user_name)
-    calendar_id = GoogleAuth.get_calender_ID(service,u"时间日志")
+    calendar_id = GoogleAuth.get_calender_id(service, u"时间日志")
     time_list=GoogleAuth.get_calender_content(service,calendar_id,time_min,time_max)
-    time_list,type_list,date_list=standard_content_list(time_min_str,time_max_str,time_list)
+    time_list,type_list,date_list=standard_content_list(min_date_str, max_date_str, time_list)
 
     #统计时间
     result_list=gen_sum_list(time_list,type_list,date_list)
     return result_list,type_list,date_list
 
 
-def print_test():
-    print("import testsuccess")
+if __name__ == "__main__":
+    result_list, type_list, date_list = get_sum_list("mm", "2018-11-18", "2018-11-25")
+    print(result_list)
 
 

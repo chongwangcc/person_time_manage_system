@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
 from __future__ import print_function
 import httplib2
@@ -12,7 +12,6 @@ from oauth2client.file import Storage
 try:
     import argparse
     args=argparse.ArgumentParser(parents=[tools.argparser])
-    #flags =args.parse_args("")
     flags = args.parse_args()
 except ImportError:
     flags = None
@@ -20,8 +19,9 @@ except ImportError:
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = 'client_secret.json'
+CLIENT_SECRET_FILE = './data/client_secret.json'
 APPLICATION_NAME = 'Google Calendar API'
+HOME_DIR = "./data/"
 
 
 def get_credentials(user_name):
@@ -33,12 +33,11 @@ def get_credentials(user_name):
     Returns:
         Credentials, the obtained credential.
     """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
+    credential_dir = os.path.join(HOME_DIR, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   user_name+'_calendar-python-quickstart.json')
+                                   user_name+'_calendar.json')
 
     store = Storage(credential_path)
     credentials = store.get()
@@ -47,12 +46,12 @@ def get_credentials(user_name):
         flow.user_agent = APPLICATION_NAME
         http = httplib2.Http(proxy_info=httplib2.ProxyInfo(
             httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080))
-        if flags:
-            credentials = tools.run_flow(flow, store, flags,http)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
+
+        credentials = tools.run_flow(flow, store, flags, http)
+
         print('Storing credentials to ' + credential_path)
     return credentials
+
 
 def get_service(user_name):
     """
@@ -66,52 +65,57 @@ def get_service(user_name):
     service = discovery.build('calendar', 'v3', http=http)
     return service
 
-def get_calender_ID(service,name):
+
+def get_calender_id(credential_service, name=u"时间日志"):
     """
     获得 日历 ID
-    :param server:  日历服务
+    :param credential_service:  日历服务
     :param name:  日历的名称
     :return: 此名称日历对应ID
     """
     page_token = None
-    ID= None
+    id = None
     while True:
-        calendar_list = service.calendarList().list(pageToken=page_token).execute()
+        calendar_list = credential_service.calendarList().list(pageToken=page_token).execute()
         for calendar_list_entry in calendar_list['items']:
-            #print([calendar_list_entry['summary']],[name])
             if name == calendar_list_entry['summary']:
-                ID = calendar_list_entry['id']
+                id = calendar_list_entry['id']
         page_token = calendar_list.get('nextPageToken')
-        if not page_token or not ID:
+        if not page_token or not id:
             break
-    return ID
+    return id
 
-def get_calender_content(service,id,timeMin,timeMax):
+
+def get_calender_content(credential_service, calender_id, min_time, max_time):
     """
     获得 日历 的指定时间段所有的活动
-    :param service:
-    :param id:
-    :param start_date:
-    :param end_date:
+    :param credential_service:
+    :param calender_id:
+    :param min_time:
+    :param max_time:
     :return:
     """
-    calendar = service.calendars().get(calendarId=id).execute()
-    #print(calendar)
-    eventsResult = service.events().list(
-        calendarId=id, timeMin=timeMin,timeMax=timeMax , singleEvents=True,
-        orderBy='startTime').execute()
+    calendar = credential_service.calendars().get(calendarId=calender_id).execute()
+    events_result = credential_service.events().list(calendarId=calender_id,
+                                                     timeMin=min_time,
+                                                     timeMax=max_time,
+                                                     singleEvents=True,
+                                                     orderBy='startTime').execute()
     list_result=[]
-    events = eventsResult.get('items', [])
+    events = events_result.get('items', [])
     if not events:
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         end=event['end'].get('dateTime', event['end'].get('date'))
         title=event['summary']
-        #print(start, end,title)
         listIndex=[start,end,title]
         list_result.append(listIndex)
     return list_result
 
+
 if __name__ == '__main__':
-    get_service("mm")
+    credential_service = get_service("mm")
+    calender_id = get_calender_id(credential_service)
+    content = get_calender_content(credential_service, calender_id, "2019-01-15T0:0:0Z", "2019-01-18T0:0:0Z")
+    print(content)
