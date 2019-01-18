@@ -1,7 +1,7 @@
 // var symptomName = last_month_day();
 
 $(function(){
-    var date_now = "2019.1.14"
+    var date_now = "2019-1-14"
     $.get("/api/v1/statistics/weekly/all/"+date_now).done(function (data){
         init0(data)
         init1("Chart1", data.working_and_study_tomato_nums_of_each_day)
@@ -32,9 +32,9 @@ function init0(data){
     tlabel.innerHTML=data.fun_nums
 }
 
-function init1(id_str, data){
+function init1(id_str, data1){
     // 番茄始终达标率
-    var nums = data.study_tomato_nums
+    var nums = data1
     //设置番茄始终达标数
     var pieChart1 = echarts.init(document.getElementById(id_str));
     pieChart1.setOption({

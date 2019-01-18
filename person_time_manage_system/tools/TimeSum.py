@@ -20,16 +20,17 @@ def standard_content_list(min_time_str, max_time_str, list_result):
     date_set=set()
     result_list=[]
     for list_one in list_result:
-        start_time=list_one[0]
-        end_time=list_one[1]
-        content=list_one[2]
+        start_time = list_one[0]
+        end_time = list_one[1]
+        content = list_one[2]
 
-        start_date_str=start_time[:10]
-        start_time_str=start_time[11:19]
-        end_data_str=end_time[0:10]
-        end_time_str=end_time[11:19]
-
-        type=re.split(u",| |;|，|；|:|：|～",content)[0]
+        start_date_str = start_time[:10]
+        start_time_str = start_time[11:19]
+        end_data_str = end_time[0:10]
+        end_time_str = end_time[11:19]
+        if content is None or len(content)==0:
+            continue
+        type=re.split(u",| |;|，|；|:|：|～", content)[0]
         type_set.add(type)
 
         date_s = datetime.datetime.strptime(start_date_str+start_time_str, '%Y-%m-%d%H:%M:%S')
@@ -77,7 +78,7 @@ def standard_content_list(min_time_str, max_time_str, list_result):
 
             result_list.append(temp_list)
 
-    return result_list,list(type_set),list(date_set)
+    return result_list, list(type_set),list(date_set)
 
 
 def gen_sum_list(time_list, type_list, date_list):
@@ -122,9 +123,9 @@ def gen_sum_list(time_list, type_list, date_list):
             temp_list.append(delta)
         temp_list.append(sum_delta)
         result_list.append(temp_list)
-        sum_all+=sum_delta
+        sum_all += sum_delta
 
-    temp_list=["日期汇总"]
+    temp_list = ["日期汇总"]
     for date in date_list:
         sum_delta=datetime.timedelta()
         for type in type_list:
@@ -179,8 +180,55 @@ def get_sum_list(user_name, min_date_str, max_date_str):
     return result_list,type_list,date_list
 
 
+def get_tomato_nums(result_list, label="工作", each_tomato_minutes=30 ):
+    """
+    获得 番茄始时钟数
+    :param result_list:
+    :param each_tomato_minutes:
+    :param label:
+    :return:
+    """
+    tomato_nums = 0
+    for t_list in result_list:
+        m_type = t_list[0]
+        m_sum_delta = t_list[-1]
+        if m_type == label:
+            # 找到了指定的类型
+            tomato_nums = round(m_sum_delta.total_seconds()/60/each_tomato_minutes, 2)
+
+    return tomato_nums
+
+
+def get_nums(result_list, label="工作"):
+    """
+    获得某类获得 的次数
+    :param result_list:
+    :param label:
+    :return:
+    """
+    nums = 0
+    for t_list in result_list:
+        m_type = t_list[0]
+        m_sum_delta = t_list[-1]
+        if m_type == label:
+            # 找到了指定的类型
+            for t_time in t_list[1:-2]:
+                if (t_time.total_seconds()/60)>1:
+                    nums += 1
+    return nums
+
+
+
 if __name__ == "__main__":
-    result_list, type_list, date_list = get_sum_list("mm", "2018-11-18", "2018-11-25")
+    result_list, type_list, date_list = get_sum_list("mm", "2019-01-13", "2019-01-19")
     print(result_list)
+    print(type_list)
+    print(date_list)
+    tomato_nums = get_tomato_nums(result_list)
+    print(tomato_nums)
+    tomato_nums = get_tomato_nums(result_list, label="学习")
+    print(tomato_nums)
+    _nums = get_nums(result_list, label="锻炼")
+    print(_nums)
 
 
