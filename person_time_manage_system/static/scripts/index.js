@@ -1,7 +1,23 @@
 // var symptomName = last_month_day();
 
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;
+         
+    return currentdate;
+}
+
 $(function(){
-    var date_now = "2019-1-14"
+    var date_now = getNowFormatDate()
     $.get("/api/v1/statistics/weekly/all/"+date_now).done(function (data){
         init0(data)
         init1("Chart1", data.working_and_study_tomato_nums_of_each_day)

@@ -11,7 +11,7 @@ from datetime import datetime,timedelta
 from tools import TimeSum
 
 app = Flask(__name__)
-
+g_user_name="mm"
 
 def calc_week_begin_end_date(date_str):
     """
@@ -37,7 +37,7 @@ def weekly_statistics(date_str):
     """
 
     # TODO 登陆验证函数
-    user_name = "mm"
+    user_name = g_user_name
     monday, sunday = calc_week_begin_end_date(date_str)
     result_list, type_list, date_list = TimeSum.get_sum_list(user_name, "2019-01-13", "2019-01-19")
     # 构造返回结果
@@ -105,8 +105,10 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
-@app.route("/", methods=["GET"])
-def index():
+@app.route("/<user_name>", methods=["GET"])
+def index(user_name):
+    global g_user_name
+    g_user_name = user_name
     return render_template("index.html")
 
 
