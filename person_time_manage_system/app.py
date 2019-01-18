@@ -56,42 +56,14 @@ def weekly_statistics(date_str):
     # 3. 睡眠时间
     result["sleep_hours"] = {
         "standard_hours": 7.5,
-        "actual_hours": [
-            {"category": "星期日", "hours": 8},
-            {"category": "星期一", "hours": 7.5},
-            {"category": "星期二", "hours": 6},
-            {"category": "星期三", "hours": 10},
-            {"category": "星期四", "hours": 5.5},
-            {"category": "星期五", "hours": 7},
-            {"category": "星期六", "hours": 6},
-        ]
+        "actual_hours": TimeSum.get_every_day_sum_of_category(result_list, label="睡觉")
     }
 
     # 4. 各项每天时间汇总
-    result["every_day_category_details"] = {
-        "xData":[" 星期1"," 星期2"," 星期3"," 星期4"," 星期5"," 星期6"," 星期日"],
-        "legends": ["睡觉", '学习', '杂', " 工作", " 运动", " 娱乐"],
-        # 每个类别，每一天的时间，shape==（lengends.长度  *  xData.长度）
-        "data":[
-            [1,2,3,4,5,6,7],
-            [8,9,10,11,12,13,14],
-            [15,16,17,18,19,20,21],
-            [1, 2, 3, 4, 5, 6, 7],
-            [8, 9, 10, 11, 12, 13, 14],
-            [15, 16, 17, 18, 19, 20, 21],
-        ],
-        "sum":[15, 16, 17, 18, 19, 20, 21]
-    }
+    result["every_day_category_details"] = TimeSum.get_every_day_category_details(result_list, day_padding=7)
 
     # 5. 类别 时间汇总
-    result["each_category_time_sum"] = [
-            {"name": "睡觉", "value": 8},
-            {"name": "学习", "value": 7.5},
-            {"name": "工作", "value": 6},
-            {"name": "娱乐", "value": 10},
-            {"name": "运动", "value": 5.5},
-            {"name": "杂", "value": 7},
-        ]
+    result["each_category_time_sum"] = TimeSum.get_all_category_time_sum(result_list)
 
     # 6. 漏填、充填时段
     result["missing_info"] = [

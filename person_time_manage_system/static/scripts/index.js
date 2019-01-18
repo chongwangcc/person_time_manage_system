@@ -498,184 +498,185 @@ function init2(id_str, data){
 }
 
 function init3(id_str, data){
-          var corlor_list = ["rgba(255,144,128,1)",
-              "rgba(0,191,183,1)",
-              "rgba(55,126,184,1)",
-             "rgba(77,175,74,1)",
-              "rgba(152,78,163,1)",
-              "rgba(255,127,0,1)",
-              "rgba(255,255,51,1)",
-              "rgba(166,86,40,1)",
-              "rgba(247,129,191,1)",
-              "rgba(102,194,165,1)",
-              "rgba(252,141,98,1)",
-              "rgba(141,160,203,1)",
-              "rgba(231,138,195,1)",
-          ]
-            var xData = data.xData
-            var legendData =  data.legends
-            var all_data_list = data.data
-            var total_data = data.sum
+        var corlor_list = ["rgba(255,144,128,1)",
+          "rgba(0,191,183,1)",
+          "rgba(55,126,184,1)",
+         "rgba(77,175,74,1)",
+          "rgba(152,78,163,1)",
+          "rgba(255,127,0,1)",
+          "rgba(255,255,51,1)",
+          "rgba(166,86,40,1)",
+          "rgba(247,129,191,1)",
+          "rgba(102,194,165,1)",
+          "rgba(252,141,98,1)",
+          "rgba(141,160,203,1)",
+          "rgba(231,138,195,1)",
+      ]
+        var xData = data.xData
+        var legendData =  data.legends
+        var all_data_list = data.data
+        var total_data = data.sum
 
-            var total_series =         {
-                        name: "总数",
-                        type: "line",
-                        stack: "总量",
-                        symbolSize:10,
-                        symbol:'circle',
-                        itemStyle: {
-                            normal: {
-                                color: "rgba(252,230,48,1)",
-                                barBorderRadius: 0,
-                                label: {
-                                    show: true,
-                                    position: "top",
-                                    formatter: function(p) {
-                                        return p.value > 0 ? (p.value) : '';
-                                    }
+        var total_series =         {
+                    name: "总数",
+                    type: "line",
+                    symbolSize:10,
+                    symbol:'circle',
+                    itemStyle: {
+                        normal: {
+                            color: "rgba(252,230,48,1)",
+                            barBorderRadius: 0,
+                            label: {
+                                show: true,
+                                position: "top",
+                                formatter: function(p) {
+                                    return p.value > 0 ? (p.value) : '';
                                 }
                             }
-                        },
-                        data: total_data
-                    }
-
-            var gen_label = function (label, data, color){
-                        return {
-                        name: label,
-                        type: "bar",
-                        barMaxWidth: 50,
-                        barGap: "10%",
-                        stack: "总量",
-                        itemStyle: {
-                            normal: {
-                                color: color,
-                                "barBorderRadius": 0,
-                                "label": {
-                                    "show": true,
-                                    "textStyle": {
-                                        "color": "#fff"
-                                    },
-                                    "position": "insideTop",
-                                    formatter: function(p) {
-                                        return p.value > 0 ? (p.value) : '';
-                                    }
-                                }
-                            }
-                        },
-                        data:data
-                    }
-            }
-
-            var seriesObj = []
-            for(var i=0;i<xData.length;i++){
-                var t_series = gen_label(legendData[i],all_data_list[i],corlor_list[i])
-                seriesObj.push(t_series)
-            }
-            seriesObj.push(total_series)
-
-            option = {
-                tooltip: {
-                    trigger: "axis",
-                    axisPointer: {
-                        type: "shadow",
-                        textStyle: {
-                            color: "#fff"
                         }
-
                     },
-                },
-                grid: {
-                    borderWidth: 0,
-                    top: 110,
-                    bottom: 95,
+                    data: total_data
+                }
+
+        var gen_label = function (label, data, color){
+                    return {
+                    name: label,
+                    type: "bar",
+                    barMaxWidth: 50,
+                    barGap: "10%",
+                    stack: "总量",
+                    itemStyle: {
+                        normal: {
+                            color: color,
+                            "barBorderRadius": 0,
+                            "label": {
+                                "show": true,
+                                "textStyle": {
+                                    "color": "#fff"
+                                },
+                                "position": "insideTop",
+                                formatter: function(p) {
+                                    return p.value > 0 ? (p.value) : '';
+                                }
+                            }
+                        }
+                    },
+                    data:data
+                }
+        }
+
+        var seriesObj = []
+
+        console.log(xData)
+        for(var i=0;i<xData.length;i++){
+            var t_series = gen_label(legendData[i],all_data_list[i],corlor_list[i])
+            seriesObj.push(t_series)
+        }
+        seriesObj.push(total_series)
+
+        option = {
+            tooltip: {
+                trigger: "axis",
+                axisPointer: {
+                    type: "shadow",
                     textStyle: {
                         color: "#fff"
                     }
+
                 },
-                legend: {
-                    x: '4%',
-                    top: '11%',
-                    textStyle: {
-                        color: '#90979c',
-                    },
-                    data: legendData
+            },
+            grid: {
+                borderWidth: 0,
+                top: 110,
+                bottom: 95,
+                textStyle: {
+                    color: "#fff"
+                }
+            },
+            legend: {
+                x: '4%',
+                top: '11%',
+                textStyle: {
+                    color: '#90979c',
                 },
-                calculable: true,
-                xAxis: [{
-                    type: "category",
-                    axisLine: {
-                        lineStyle: {
-                            color: '#90979c'
-                        }
-                    },
-                    splitLine: {
-                        show: false
-                    },
-                    axisTick: {
-                        show: false
-                    },
-                    splitArea: {
-                        show: false
-                    },
-                    axisLabel: {
-                        interval: 0,
+                data: legendData
+            },
+            calculable: true,
+            xAxis: [{
+                type: "category",
+                axisLine: {
+                    lineStyle: {
+                        color: '#90979c'
+                    }
+                },
+                splitLine: {
+                    show: false
+                },
+                axisTick: {
+                    show: false
+                },
+                splitArea: {
+                    show: false
+                },
+                axisLabel: {
+                    interval: 0,
 
-                    },
-                    data: xData,
-                }],
-                yAxis: [{
-                    type: "value",
-                    splitLine: {
-                        show: false
-                    },
-                    axisLine: {
-                        lineStyle: {
-                            color: '#90979c'
-                        }
-                    },
-                    axisTick: {
-                        show: false
-                    },
-                    axisLabel: {
-                        interval: 0,
+                },
+                data: xData,
+            }],
+            yAxis: [{
+                type: "value",
+                splitLine: {
+                    show: false
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: '#90979c'
+                    }
+                },
+                axisTick: {
+                    show: false
+                },
+                axisLabel: {
+                    interval: 0,
 
-                    },
-                    splitArea: {
-                        show: false
-                    },
+                },
+                splitArea: {
+                    show: false
+                },
 
-                }],
-                dataZoom: [
-                    {
-                    show: true,
-                    height: 30,
-                    xAxisIndex: [
-                        0
-                    ],
-                    bottom: 30,
-                    start: 0,
-                    end: 100,
-                    handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
-                    handleSize: '110%',
-                    handleStyle:{
-                        color:"#d3dee5",
+            }],
+            dataZoom: [
+                {
+                show: true,
+                height: 30,
+                xAxisIndex: [
+                    0
+                ],
+                bottom: 30,
+                start: 0,
+                end: 100,
+                handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
+                handleSize: '110%',
+                handleStyle:{
+                    color:"#d3dee5",
 
-                    },
-                       textStyle:{
-                        color:"#fff"},
-                       borderColor:"#90979c"
-                    }, {
-                    type: "inside",
-                    show: true,
-                    height: 15,
-                    start: 1,
-                    end: 35
-                }],
-                series: seriesObj
-            }
+                },
+                   textStyle:{
+                    color:"#fff"},
+                   borderColor:"#90979c"
+                }, {
+                type: "inside",
+                show: true,
+                height: 15,
+                start: 1,
+                end: 35
+            }],
+            series: seriesObj
+        }
 
-            var mapChart = echarts.init(document.getElementById(id_str));
-            mapChart.setOption(option)
+        var mapChart = echarts.init(document.getElementById(id_str));
+        mapChart.setOption(option)
 }
 
 function init4(id_str, data1){

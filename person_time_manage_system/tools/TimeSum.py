@@ -212,10 +212,86 @@ def get_nums(result_list, label="工作"):
         m_sum_delta = t_list[-1]
         if m_type == label:
             # 找到了指定的类型
-            for t_time in t_list[1:-2]:
+            for t_time in t_list[1:-1]:
                 if (t_time.total_seconds()/60)>1:
                     nums += 1
     return nums
+
+
+def get_all_category_time_sum(result_list):
+    """
+    获得每个类别的汇总时间
+    :param result_list:
+    :return:
+    """
+    result = []
+    for t_list in result_list[1:-1]:
+        m_type = t_list[0]
+        m_sum_delta = t_list[-1]
+        # if m_type == "睡觉":
+        #     continue
+        t_dict = {"name":m_type, "value":round(m_sum_delta.total_seconds()/60,2)}
+        result.append(t_dict)
+    return result
+
+
+def get_every_day_sum_of_category(result_list, label="睡觉"):
+    """
+    获得某类别，每天的时间
+    :param result_list:
+    :param label:
+    :return:
+    """
+    result = []
+    day_list=result_list[0][1:]
+    for t_list in result_list:
+        m_type = t_list[0]
+        m_sum_delta = t_list[-1]
+        if m_type == label:
+            # 找到了指定的类型
+            # {"category": "星期日", "hours": 8},
+            for index, t_time in enumerate(t_list[1:-1]):
+                t_dict = {"category": day_list[index], "hours": round(t_time.total_seconds()/3600,2)}
+                result.append(t_dict)
+    return result
+
+
+def get_every_day_category_details(result_list, day_padding=7):
+    """
+    获得所有明细
+    :param result_list:
+    :param day_padding: 日期不够长时，加长日期
+    :return:
+    """
+    xData = result_list[0][1:-1]
+    sum = [round(x.total_seconds()/3600, 2) for x in result_list[-1][1:-2]]
+    data = []
+    legends = []
+    for t_list in result_list[1:-1]:
+        legends.append( t_list[0])
+
+    every_day_sum = [[x for x in legends] for l in xData]
+
+    for i in range(len(xData)):
+        for j in range(len(legends)):
+            every_day_sum[i][j] = round(result_list[1:-1][j][1:-1][i].total_seconds()/3600, 2)
+
+    every_day_sum=[]
+    for t_list in result_list[1:-1]:
+        every_day_sum.append([ round(t.total_seconds()/3600,2) for t in t_list[1:-1]])
+
+    result = {
+        "xData": xData,
+        "legends": legends,
+        # 每个类别，每一天的时间，shape==（lengends.长度  *  xData.长度）
+        "data": every_day_sum,
+        "sum": sum
+    }
+
+    return result
+
+
+
 
 
 
