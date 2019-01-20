@@ -309,7 +309,7 @@ def get_every_day_category_details(result_list, day_padding=7):
     """
     # TODO 按照day_padding 补充日期
     xData = result_list[0][1:-1]
-    sum = [round(x.total_seconds()/3600, 2) for x in result_list[-1][1:-2]]
+    sum = [round(x.total_seconds()/3600, 2) for x in result_list[-1][1:-1]]
     data = []
     legends = []
     for t_list in result_list[1:-1]:
