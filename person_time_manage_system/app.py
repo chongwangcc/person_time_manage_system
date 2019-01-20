@@ -71,11 +71,12 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
-@app.route("/<user_name>", methods=["GET"])
+@app.route("/timesum/<user_name>", methods=["GET"])
 def index(user_name):
     global g_user_name
     g_user_name = user_name
     return render_template("index.html")
+
 
 
 if __name__ == "__main__":

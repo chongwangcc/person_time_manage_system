@@ -1,5 +1,85 @@
 // var symptomName = last_month_day();
 
+var date_now = getNowFormatDate()
+
+function initDate(){
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
+    function addDate(date,days){
+       var d=new Date(date);
+       d.setDate(d.getDate()+days);
+       var m=d.getMonth()+1;
+       return d.getFullYear()+'-'+m+'-'+d.getDate();
+     }
+
+    $("#img_datepicker").on("click", function(e) {
+         $('#datepicker').datepicker('show');
+    });
+    $('#datepicker').datepicker({
+        format:'yyyy-mm-dd',
+        onSelect: function(dateText) {
+            var dd = new Date(dateText).Format("yyyy-MM-dd");
+            date_now = dd
+            n = new Date(dateText).getDay()
+
+            m_start_date = addDate(dd, -n)
+            m_end_date = addDate(dd, 6-n)
+
+             //设置开始时间、结束时间
+            var tlabel =document.getElementById("id_start_date");
+            tlabel.innerHTML=m_start_date
+            var tlabel =document.getElementById("id_end_date");
+            tlabel.innerHTML=m_end_date
+
+            //调用后台接口
+            clearCharts()
+            main()
+        }
+    });
+}
+
+function clearCharts(){
+
+    // 工作、学习番茄时钟数
+    var tlabel =document.getElementById("id_work_tomato_nums");
+    tlabel.innerHTML="0"
+    var tlabel =document.getElementById("id_study_tomato_nums");
+    tlabel.innerHTML="0"
+
+    // 运动、娱乐次数
+    var tlabel =document.getElementById("exercise_nums");
+    tlabel.innerHTML="0"
+    var tlabel =document.getElementById("fun_nums");
+    tlabel.innerHTML="0"
+
+    var echart1 = echarts.init(document.getElementById("Chart1"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("Chart2"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("Chart3"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("Chart4"));
+    echart1.clear()
+
+     var ba =    document.getElementById("Chart5")
+     ba.innerHTML=""
+
+}
+
 function getNowFormatDate() {
     var date = new Date();
     var seperator1 = "-";
@@ -11,13 +91,14 @@ function getNowFormatDate() {
     if (strDate >= 0 && strDate <= 9) {
         strDate = "0" + strDate;
     }
-    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;
-         
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate;    
     return currentdate;
 }
 
-$(function(){
-    var date_now = getNowFormatDate()
+function main(){
+
+
+
     $.get("/api/v1/statistics/weekly/all/"+date_now).done(function (data){
         init0(data)
         init1("Chart1", data.working_and_study_tomato_nums_of_each_day)
@@ -26,6 +107,11 @@ $(function(){
         init4("Chart4", data.each_category_time_sum)
         init5("Chart5", data.missing_info)
     })
+}
+
+$(function(){
+    initDate()
+    main()
 })
 
 function init0(data){
