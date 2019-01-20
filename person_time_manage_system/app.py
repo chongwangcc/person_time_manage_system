@@ -39,7 +39,7 @@ def weekly_statistics(date_str):
     # TODO 登陆验证函数
     user_name = g_user_name
     monday, sunday = calc_week_begin_end_date(date_str)
-    result_list, missing_info = TimeSum.get_sum_list(user_name, "2019-01-13", "2019-01-19")
+    result_list, missing_info = TimeSum.get_sum_list(user_name, monday,sunday)
     # 构造返回结果
     result = {}
     # 1.开始结束日期 工作-学习番茄数 锻炼娱乐次数
