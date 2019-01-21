@@ -8,13 +8,18 @@
 
 from flask import Flask, render_template, jsonify
 from flask_login.login_manager import LoginManager
-from tools import TimeSum
+from tools import TimeSum, UserInfo
 from tools.DateTools import calc_week_begin_end_date
+
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
 g_user_name = "cc"
+
+
+@login_manager.user_loader
+def load_user(userid):
+    return UserInfo.get(userid)
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
