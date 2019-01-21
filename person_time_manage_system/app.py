@@ -7,10 +7,14 @@
 # @Software: PyCharm
 
 from flask import Flask, render_template, jsonify
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
+from flask_login.login_manager import LoginManager
 from tools import TimeSum
 
 app = Flask(__name__)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 g_user_name = "cc"
 
 
