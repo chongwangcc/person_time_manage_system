@@ -6,12 +6,13 @@
 # @File : App.py 
 # @Software: PyCharm
 
-from flask import Flask, render_template, json, jsonify, request
+from flask import Flask, render_template, jsonify
 from datetime import datetime,timedelta
 from tools import TimeSum
 
 app = Flask(__name__)
-g_user_name="cc"
+g_user_name = "cc"
+
 
 def calc_week_begin_end_date(date_str):
     """
@@ -72,10 +73,20 @@ def weekly_statistics(date_str):
 
 
 @app.route("/timesum/<user_name>", methods=["GET"])
-def index(user_name):
+def timesum(user_name):
     global g_user_name
     g_user_name = user_name
     return render_template("index.html")
+
+
+@app.route("/login")
+def login():
+    """
+    打开默认界面
+    :return:
+    """
+    # 判断有没有用户登录
+    return render_template('login.html')
 
 
 if __name__ == "__main__":
