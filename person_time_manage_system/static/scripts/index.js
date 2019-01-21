@@ -112,6 +112,7 @@ function main(){
 $(function(){
     initDate()
     main()
+
 })
 
 function init0(data){

@@ -138,6 +138,17 @@
 
 <script type="text/javascript">
 
+    window.onresize=function(){
+    setTimeout(function(){
+
+        var ids = ["Chart1", "Chart2", "Chart3", "Chart4", "Chart5"]
+        for (var i=0;i<ids.length;i++)
+        {
+            myChart = echarts.init(document.getElementById(ids[i]))
+            myChart.resize();
+        }
+    }, 50)
+}
 </script>
 </body>
 </html>
