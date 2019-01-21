@@ -7,30 +7,14 @@
 # @Software: PyCharm
 
 from flask import Flask, render_template, jsonify
-from datetime import datetime, timedelta
 from flask_login.login_manager import LoginManager
 from tools import TimeSum
-
+from tools.DateTools import calc_week_begin_end_date
 app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 g_user_name = "cc"
-
-
-def calc_week_begin_end_date(date_str):
-    """
-    计算某天的周一、周六的日期
-    :param date_str:
-    :return:
-    """
-    m_date = datetime.strptime(date_str, '%Y-%m-%d')
-    week = m_date.weekday()
-    minDate = m_date + timedelta(days=(-1 - week))
-    maxDate = m_date + timedelta(days=(6 - week))
-    monday = minDate.strftime('%Y-%m-%d')
-    sunday = maxDate.strftime('%Y-%m-%d')
-    return monday, sunday
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
