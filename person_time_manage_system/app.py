@@ -8,7 +8,9 @@
 
 from flask import Flask, render_template, jsonify
 from flask_login.login_manager import LoginManager
-from tools import TimeSum, UserInfo
+from flask_login import (current_user, login_required, login_user, logout_user, confirm_login, fresh_login_required)
+from tools import TimeSum
+from tools.UserTools import UserInfoManager
 from tools.DateTools import calc_week_begin_end_date
 
 app = Flask(__name__)
@@ -19,7 +21,7 @@ g_user_name = "cc"
 
 @login_manager.user_loader
 def load_user(userid):
-    return UserInfo.get(userid)
+    return UserInfoManager.get_user_info(userid)
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
@@ -66,13 +68,14 @@ def weekly_statistics(date_str):
 
 
 @app.route("/timesum/<user_name>", methods=["GET"])
+@login_required
 def timesum(user_name):
     global g_user_name
     g_user_name = user_name
     return render_template("index.html")
 
 
-@app.route("/login")
+@app.route("/login", methods=['GET', 'POST'])
 def login():
     """
     打开默认界面
@@ -81,6 +84,14 @@ def login():
     # 判断有没有用户登录
     return render_template('login.html')
 
+
+@app.route("/logout")
+@login_required
+def logout():
+    """
+    登出界面
+    :return:
+    """
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

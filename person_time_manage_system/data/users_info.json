@@ -1,1 +1,25 @@
-{"chongwangcc": {"calender_name": "时间日历", "data_root": "E:\\project\\CM\\Python\\googleCalenderAPI\\docs\\data\\chongwangcc"}, "default": "chongwangcc"}
+{
+    "cc":{
+        "active":true,
+        "auth_token_file":".\\data\\.credentials\\cc_calendar.json",
+        "calender_name":"时间日志",
+        "calender_server":"google",
+        "data_root":".\\data\\cache\\cc",
+        "email":"chongwangcc@gmail.com",
+        "id":"cc",
+        "password":"123456",
+        "user_name":"cc"
+    },
+    "default":"mm",
+    "mm":{
+        "active":true,
+        "auth_token_file":".\\data\\.credentials\\mm_calendar.json",
+        "calender_name":"时间日志",
+        "calender_server":"google",
+        "data_root":".\\data\\cache\\mm",
+        "email":"mmzhangwh@gmail.com",
+        "id":"mm",
+        "password":"123456",
+        "user_name":"mm"
+    }
+}
