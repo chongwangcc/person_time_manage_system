@@ -6,7 +6,7 @@
 # @File : App.py 
 # @Software: PyCharm
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify,request
 from flask_login.login_manager import LoginManager
 from flask_login import (current_user, login_required, login_user, logout_user, confirm_login, fresh_login_required)
 from tools import TimeSum
@@ -81,6 +81,12 @@ def login():
     打开默认界面
     :return:
     """
+    if request.method == 'POST':
+        user_name = request.form["username"]
+        password = request.form["password"]
+        # 判断用户密码是否正确
+
+
     # 判断有没有用户登录
     return render_template('login.html')
 
@@ -92,6 +98,10 @@ def logout():
     登出界面
     :return:
     """
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

@@ -28,36 +28,48 @@
     </style>
 </head>
 <body style="height:100vh;width:100vw;overflow:hidden">
-    <div class="bgimg">              </div>
-        <div class='login' style="position: absolute;z-index: 10;">
-	  <div class='login_title'>
-	    <span><center><h3>用户登录</h3></center></span>
-	  </div>
-	  <div class='login_fields'>
-	    <div class='login_fields__user'>
-	      <div class='icon'>
-	        <img alt="" src='../static/images/user_icon_copy.png'>
-	      </div>
-	      <input name="username" id="username" placeholder='用户名' maxlength="32" type='text' autocomplete="off"/>
-	        <div class='validation'>
-	          <img alt="" src='../static/images/tick.png'>
-	        </div>
-	    </div>
-	    <div class='login_fields__password'>
-	      <div class='icon'>
-	        <img alt="" src='../static/images/lock_icon_copy.png'>
-	      </div>
-	      <input name="password" id="password" placeholder='密码' maxlength="32" type='password' autocomplete="off">
-	      <div class='validation'>
-	        <img alt="" src='../static/images/tick.png'>
-	      </div>
-	    </div>
-	    <div class='login_fields__submit'>
-	      <input type='button' onClick="checkCode()" value='登录'>
-	    </div>
+    <div class="bgimg"></div>
+	<div class="header_center left" style="position:relative">
+        <h2><strong>个人时间管理系统</strong></h2>
+    </div>
+	<div class='login' style="position: absolute;z-index: 10;">
+		  <div class='login_title'>
+			<span><center><h3>用户登录</h3></center></span>
+		  </div>
+		  <div class='login_fields'>
+              <form method="post" id="myform" name="myform1" >
+                    <div class='login_fields__user'>
+                      <div class='icon'>
+                        <img alt="" src='../static/images/user_icon_copy.png'>
+                      </div>
+                      <input name="username" id="username" placeholder='用户名' maxlength="32" type='text' autocomplete="off"/>
+                        <div class='validation'>
+                          <img alt="" src='../static/images/tick.png'>
+                        </div>
+                    </div>
+                    <div class='login_fields__password'>
+                      <div class='icon'>
+                        <img alt="" src='../static/images/lock_icon_copy.png'>
+                      </div>
+                      <input name="password" id="password" placeholder='密码' maxlength="32" type='password' autocomplete="off">
+                      <div class='validation'>
+                        <img alt="" src='../static/images/tick.png'>
+                      </div>
+                    </div>
+                    <div class='login_fields__submit'>
+                      <input type='button' onClick="checkCode()" value='登录'>
+                    </div>
+              </form>
 	  </div>
 
 	<div id='container' style="margin-top: 220px;position:relative;z-index:5"></div>
 </div>
+
+<script type="text/javascript">
+    function checkCode() {
+        $('#myform').submit();
+    }
+</script>
+
 </body>
 </html>
