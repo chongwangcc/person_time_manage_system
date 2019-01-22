@@ -2,4 +2,5 @@ Flask>=1.0.2
 flask-login
 httplib2
 oauth2client
+flask_oauth
 google-api-python-client
