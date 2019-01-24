@@ -72,7 +72,7 @@ def weekly_statistics(date_str):
 @app.route("/timesum/", methods=["GET"])
 @login_required
 def timesum():
-    return render_template("index.html")
+    return render_template("index.html", user_name=current_user.user_name)
 
 
 @app.route("/login", methods=['GET', 'POST'])
