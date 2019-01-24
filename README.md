@@ -10,7 +10,7 @@
 
 安装命令：
 ```
-pip install r requirements.txt
+pip install -r requirements.txt
 ```
 
 启动命令：
@@ -19,7 +19,9 @@ cd person_time_manage_system
 python3 app.py
 ```
 
-打开网址: ```http://<IP>:5601/timesum/<用户名>```， 如下图：
+打开网址: ```http://<IP>:5601/login```， 如下图：
+
+![avatar](./_doc/login.PNG)
 
 ![avatar](./_doc/every_day_sum.PNG)
 
