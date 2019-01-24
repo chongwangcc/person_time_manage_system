@@ -99,7 +99,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["POST","GET"])
 @login_required
 def logout():
     """
@@ -107,7 +107,7 @@ def logout():
     :return:
     """
     logout_user()
-    return jsonify({'status': 0, 'msg': 'Logout success.'})
+    return redirect('/login')
 
 
 @app.errorhandler(404)
