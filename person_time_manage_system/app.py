@@ -93,7 +93,7 @@ def login():
             return redirect("/timesum/")
         else:
             # 登陆失败，弹出消息框
-            return jsonify({"info": "用户名或密码错误"})
+            return render_template('login.html')
 
     # 判断有没有用户登录
     return render_template('login.html')
