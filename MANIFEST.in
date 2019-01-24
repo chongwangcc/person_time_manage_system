@@ -1,0 +1,6 @@
+recursive-include person_time_manage_system/static *
+recursive-include person_time_manage_system/data *
+recursive-include person_time_manage_system/templates *
+recursive-include requirements.txt
+recursive-include MANIFEST.in
+recursive-include README.md

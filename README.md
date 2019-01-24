@@ -8,7 +8,16 @@
 环境
 - Python3.6
 
-安装命令：
+打包工程：
+```
+python setup.py sdist --dist-dir _bin
+```
+或者
+```
+python setup.py bdist_wheel --dist-dir _bin
+```
+
+安装依赖命令：
 ```
 pip install -r requirements.txt
 ```
@@ -19,7 +28,7 @@ cd person_time_manage_system
 python3 app.py
 ```
 
-打开网址: ```http://<IP>:5601/login```， 如下图：
+打开网址: ```http://<IP>:9001/login```， 如下图：
 
 ![avatar](./_doc/login.PNG)
 
