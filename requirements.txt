@@ -1,5 +1,5 @@
 Flask>=1.0.2
-flask-login
+flask-login>=0.4.1
 httplib2
 oauth2client
 flask_oauth

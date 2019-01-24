@@ -6,7 +6,7 @@
 # @File : App.py 
 # @Software: PyCharm
 
-from flask import Flask, render_template, jsonify,request
+from flask import Flask, render_template, jsonify, request, redirect
 from flask_login.login_manager import LoginManager
 from flask_login import (current_user, login_required, login_user, logout_user, confirm_login, fresh_login_required)
 from tools import TimeSum
@@ -14,17 +14,19 @@ from tools.UserTools import UserInfoManager
 from tools.DateTools import calc_week_begin_end_date
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = '123456'
 login_manager = LoginManager()
 login_manager.init_app(app)
-g_user_name = "cc"
 
+userinfomanager = UserInfoManager("./data")
 
 @login_manager.user_loader
 def load_user(userid):
-    return UserInfoManager.get_user_info(userid)
+    return userinfomanager.get_user_info(userid)
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
+@login_required
 def weekly_statistics(date_str):
     """
     获得每周相关的统计信息、每周概览的统计信息从这个一个API调用
@@ -33,7 +35,7 @@ def weekly_statistics(date_str):
     """
 
     # TODO 登陆验证函数
-    user_name = g_user_name
+    user_name = current_user.user_name
     monday, sunday = calc_week_begin_end_date(date_str)
     result_list, missing_info = TimeSum.get_sum_list(user_name, monday,sunday)
     # 构造返回结果
@@ -67,11 +69,9 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
-@app.route("/timesum/<user_name>", methods=["GET"])
+@app.route("/timesum/", methods=["GET"])
 @login_required
-def timesum(user_name):
-    global g_user_name
-    g_user_name = user_name
+def timesum():
     return render_template("index.html")
 
 
@@ -85,23 +85,35 @@ def login():
         user_name = request.form["username"]
         password = request.form["password"]
         # 判断用户密码是否正确
-
+        m_user = userinfomanager.get_user_info(user_name)
+        if m_user is not None and m_user.password == password:
+            # 登陆成功
+            login_user(m_user)
+            # 跳转
+            return redirect("/timesum/")
+        else:
+            # 登陆失败，弹出消息框
+            return jsonify({"info": "用户名或密码错误"})
 
     # 判断有没有用户登录
     return render_template('login.html')
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 @login_required
 def logout():
     """
     登出界面
     :return:
     """
+    logout_user()
+    return jsonify({'status': 0, 'msg': 'Logout success.'})
+
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
