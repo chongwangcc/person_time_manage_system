@@ -69,10 +69,15 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
-@app.route("/timesum/", methods=["GET"])
+@app.route("/weeeksum/", methods=["GET"])
 @login_required
 def timesum():
     return render_template("index.html", user_name=current_user.user_name)
+
+@app.route("/monthlySum/", methods=["GET"])
+@login_required
+def monthlySum():
+    return render_template("monthly.html", user_name=current_user.user_name)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -90,7 +95,7 @@ def login():
             # 登陆成功
             login_user(m_user)
             # 跳转
-            return redirect("/timesum/")
+            return redirect("/weeeksum")
         else:
             # 登陆失败，弹出消息框
             return render_template('login.html')
