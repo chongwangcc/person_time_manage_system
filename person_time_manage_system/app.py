@@ -34,7 +34,7 @@ def weekly_statistics(date_str):
     :return:
     """
 
-    # TODO 登陆验证函数
+    # 登陆验证函数
     user_name = current_user.user_name
     monday, sunday = calc_week_begin_end_date(date_str)
     result_list, missing_info = TimeSum.get_sum_list(user_name, monday,sunday)
@@ -69,10 +69,11 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
-@app.route("/weeeksum/", methods=["GET"])
+@app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():
     return render_template("index.html", user_name=current_user.user_name)
+
 
 @app.route("/monthlySum/", methods=["GET"])
 @login_required
@@ -95,7 +96,7 @@ def login():
             # 登陆成功
             login_user(m_user)
             # 跳转
-            return redirect("/weeeksum")
+            return redirect("/weeksum")
         else:
             # 登陆失败，弹出消息框
             return render_template('login.html')
