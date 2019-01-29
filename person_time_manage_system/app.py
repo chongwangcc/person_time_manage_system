@@ -249,7 +249,6 @@ def monthly_statistics(date_str):
     return jsonify(result)
 
 
-
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():
