@@ -69,6 +69,175 @@ def weekly_statistics(date_str):
     return jsonify(result)
 
 
+@app.route("/api/v1/statistics/monthly/all/<date_str>", methods=["GET"])
+@login_required
+def monthly_statistics(date_str):
+    """
+    获得每月统计数据
+    :param date_str 月份字符串，例如：2019-01 :
+    :return:
+    """
+    # TODO 查找缓存，获得每月数据
+
+    #构造结果
+    result={}
+    result["start_date"] = "2019-01-01"
+    result["end_date"] = "2019-01-29"
+    result["during_percent"] = "93%"
+    result["living_percent"] = "30%"
+    result["working_tomato_nums"] = "40"
+    result["study_tomato_nums"] = "60"
+
+    #1. 本月主题词云
+    result["word_cloud"] = [
+                        {
+                            "name": 'Sam S Club',
+                            "value": 10000,
+                        }, {
+                            "name": 'Macys',
+                            "value": 6181
+                        }, {
+                            "name": 'Amy Schumer',
+                            "value": 4386
+                        }, {
+                            "name": 'Jurassic World',
+                            "value": 4055
+                        }, {
+                            "name": 'Charter Communications',
+                            "value": 2467
+                        }, {
+                            "name": 'Chick Fil A',
+                            "value": 2244
+                        }, {
+                            "name": 'Planet Fitness',
+                            "value": 1898
+                        }, {
+                            "name": 'Pitch Perfect',
+                            "value": 1484
+                        }, {
+                            "name": 'Express',
+                            "value": 1112
+                        }, {
+                            "name": 'Home',
+                            "value": 965
+                        }, {
+                            "name": 'Johnny Depp',
+                            "value": 847
+                        }, {
+                            "name": 'Lena Dunham',
+                            "value": 582
+                        }, {
+                            "name": 'Lewis Hamilton',
+                            "value": 555
+                        }, {
+                            "name": 'KXAN',
+                            "value": 550
+                        }, {
+                            "name": 'Mary Ellen Mark',
+                            "value": 462
+                        }, {
+                            "name": 'Farrah Abraham',
+                            "value": 366
+                        }, {
+                            "name": 'Rita Ora',
+                            "value": 360
+                        }, {
+                            "name": 'Serena Williams',
+                            "value": 282
+                        }, {
+                            "name": 'NCAA baseball tournament',
+                            "value": 273
+                        }, {
+                            "name": 'Point',
+                            "value": 273
+                        }, {
+                            "name": 'Point Break',
+                            "value": 265
+                        }]
+
+    #2. 各项能力雷达图
+    result["ability_redar"] = [
+        {
+              "value": [5, 7, 1.2, 1.1, 1.5, 1.4],
+              "name": '上月',
+          },{
+              "value": [2.5, 1.2, 8, 8.5, 1.2, 1.2],
+              "name": '本月',
+          }
+    ]
+
+    # 3, 各类环比图
+    result["compare"] ={
+        "last_month":[209,236,325],
+        "this_month":[209,236,325],
+        "growth":[1,13,5],
+        "type":['工作时长',"学习时长","运动"]
+    }
+
+    # 4. 活着时间
+    result["living_time"]={
+        "last_month_data":[120, 132, 101, 134, 90, 230, 210],
+        "this_month_data":[220, 182, 191, 234, 290, 330, 310]
+    }
+
+    # 5. 类别分布矩形图
+    result["category_rectangle"]={
+        "工作":{
+            "$count":12,
+            "开发":{
+                 "$count":34,
+            },
+            "运维":{
+                 "$count":46,
+            },
+            "开会":{
+                 "$count":78,
+            },
+        },
+        "学习":{
+            "$count":12,
+            "时间日志":{
+                 "$count":34,
+            },
+            "看书":{
+                 "$count":780,
+            },
+            "写笔记":{
+                 "$count":100,
+            },
+        }
+    }
+
+    # 6. TODO 活着时长演变图
+    result["living_evolution"]={}
+
+    # 7. 工作时段转换率
+    result["working_hours_transform_rate"]={
+        "legend": ['展现','点击','访问','咨询','订单'],
+        "value": [
+                    {"value": 20, "name": '访问'},
+                    {"value": 10, "name": '咨询'},
+                    {"value": 5, "name": '订单'},
+                    {"value": 80, "name": '点击'},
+                    {"value": 100, "name": '展现'}
+                ]
+    }
+
+    # 8. 学习时段转换率
+    result["learning_hours_transform_rate"]={
+        "legend": ['展现','点击','访问','咨询','订单'],
+        "value": [
+                    {"value": 20, "name": '访问'},
+                    {"value": 10, "name": '咨询'},
+                    {"value": 5, "name": '订单'},
+                    {"value": 80, "name": '点击'},
+                    {"value": 100, "name": '展现'}
+                ]
+    }
+
+
+
+
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():

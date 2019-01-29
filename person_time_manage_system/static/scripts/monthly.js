@@ -1,5 +1,130 @@
+var date_now = getNowFormatDate()
+
+function initDate(){
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
+    function addDate(date,days){
+       var d=new Date(date);
+       d.setDate(d.getDate()+days);
+       var m=d.getMonth()+1;
+       return d.getFullYear()+'-'+m+'-'+d.getDate();
+     }
+
+    $("#img_datepicker").on("click", function(e) {
+         $('#datepicker').datepicker('show');
+    });
+    $('#datepicker').datepicker({
+        format:'yyyy-mm',
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        beforeShow: function(dateText, inst){
+			 $("#ui-datepicker-div").addClass('month');
+		},
+        onClose: function(dateText, inst) {
+            var dd = new Date(dateText).Format("yyyy-MM");
+            m_start_date = new Date(dd.getFullYear(), dd.getMonth(), 1);
+            m_end_date = new Date(dd.getFullYear(), dd.getMonth()+1, 0);
+
+             //设置开始时间、结束时间
+            var tlabel =document.getElementById("id_start_date");
+            tlabel.innerHTML=addDate(m_start_date, 0)
+            var tlabel =document.getElementById("id_end_date");
+            tlabel.innerHTML=addDate(m_end_date, 0)
+
+            //调用后台接口
+            clearCharts()
+            main()
+        }
+    });
+}
+
+function clearCharts(){
+
+    // 工作、学习番茄时钟数
+    var tlabel =document.getElementById("id_work_tomato_nums");
+    tlabel.innerHTML="0"
+    var tlabel =document.getElementById("id_study_tomato_nums");
+    tlabel.innerHTML="0"
+
+    // 本月已过、活着时间占比
+    var tlabel =document.getElementById("id_month_passed");
+    tlabel.innerHTML="0%"
+    var tlabel =document.getElementById("id_living_percent");
+    tlabel.innerHTML="0%"
+
+    var echart1 = echarts.init(document.getElementById("echart1"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart2"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart3"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart4"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart5"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart6"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart7"));
+    echart1.clear()
+    var echart1 = echarts.init(document.getElementById("echart8"));
+    echart1.clear()
+
+}
+
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month    
+    return currentdate;
+}
+
+function main(){
+
+    restful_url="/api/v1/statistics/monthly/all/"+date_now
+
+    $.get(restful_url).done(function (data){
+        init0(data)
+        init1("echart1", data.word_cloud)
+        init2("echart2", data.ability_redar)
+        init3("echart3", data.compare)
+        init4("echart4", data.living_time)
+        init5("echart5", data.category_rectangle)
+        init6("echart6", data.living_evolution)
+        init7("echart7", data.working_hours_transform_rate)
+        init8("echart8", data.learning_hours_transform_rate)
+    })
+}
+
+
+
 
 $(function(){
+
+    initDate()
+
       init1();
       init2();
       init3();
@@ -10,7 +135,27 @@ $(function(){
       init8();
 })
 
-function init1(){
+function init0(data){
+    //设置开始时间、结束时间
+    var tlabel =document.getElementById("id_start_date");
+    tlabel.innerHTML=data.start_date
+    var tlabel =document.getElementById("id_end_date");
+    tlabel.innerHTML=data.end_date
+
+    // 工作、学习番茄时钟数
+    var tlabel =document.getElementById("id_work_tomato_nums");
+    tlabel.innerHTML=data.working_tomato_nums
+    var tlabel =document.getElementById("id_study_tomato_nums");
+    tlabel.innerHTML=data.study_tomato_nums
+
+    // 本月已过
+    var tlabel =document.getElementById("id_month_passed");
+    tlabel.innerHTML=data.during_percent
+    var tlabel =document.getElementById("id_living_percent");
+    tlabel.innerHTML=data.living_percent
+}
+
+function init1(id_str, data1){
 
     var data= [
                         {
@@ -109,7 +254,7 @@ function init1(){
     mychart.setOption(option);
 }
 
-function init2(){
+function init2(id_str, data1){
 
     var data = [{
               value: [5, 7, 1.2, 1.1, 1.5, 1.4],
@@ -191,124 +336,108 @@ function init2(){
     histogramChart1.setOption(option);
 }
 
-function init3(){
-    var cost = [0.2, 0.201, 1]//本期比上期（大于1按1处理）
-    var dataCost = [1000.01,200000,200]//真是的金额
-    var totalCost = [1, 1, 1]//比例综合
-    var visits = [92, 102, 89]//本期占总的百分比*100
-    var grade = ['运动时长', '学习时长', '工作时长']
-    var data = {
-        grade: grade,
-        cost: cost,
-        totalCost: totalCost,
-        visits: visits,
-        dataCost:dataCost
-    };
-    var option = {
+function init3(id_str, data1){
+    var data={
+        "last_month":[209,236,325],
+        "this_month":[209,236,325],
+        "growth":[1,13,5],
+        "type":['工作时长',"学习时长","运动"]
+    }
+    option = {
         grid: {
-            left: '240',
-            right: '100'
+            containLabel: true,
+            x:'5%',
+            y:'15%',
+            x2:'5%',
+            y2:'3%'
         },
-        xAxis: {
-            show: false,
+        legend: {
+            data: ['增速','上月',"本月"],
+                      textStyle: {
+              color: '#fff'
+          }
         },
-        yAxis: {
+        xAxis: [{
             type: 'category',
-            axisLabel: {
-                margin: 100,
-                show: true,
-                color: '#4DCEF8',
-                fontSize: 14
-            },
             axisTick: {
-                show: false,
+                alignWithLabel: true
+            },
+            data: data.type,
+            axisLine: {
+                lineStyle: {
+                    color: '#ccc'
+                }
+            },
+        }],
+        yAxis: [{
+            type: 'value',
+            name: '增速',
+            position: 'right',
+            axisLabel: {
+                formatter: '{value} %'
             },
             axisLine: {
-                show: false,
-            },
-            data: data.grade
-        },
-        series: [{
-            type: 'bar',
-            barGap: '-100%',
-            label: {
-                normal: {
-                    show: true,
-                    position: 'right',
-                    color: '#fff',
-                    fontSize: 14,
-                    formatter:
-                    function(param) {
-                        return '环比：'+data.visits[param.dataIndex] +'%';
-                    },
-                }
-            },
-            barWidth: '35%',
-            itemStyle: {
-                normal: {
-                    borderColor: '#4DCEF8',
-                    borderWidth: 2,
-                    barBorderRadius: 15,
-                    color: 'rgba(102, 102, 102,0)'
-                },
-            },
-            z: 1,
-            data: data.totalCost,
-            // data: da
-        }, {
-            type: 'bar',
-            barGap: '-98%',
-            barWidth: '33%',
-            itemStyle: {
-                normal: {
-                    barBorderRadius: 16,
-                    color: {
-                        type: 'linear',
-                        x: 0,
-                        x1: 1,
-                        colorStops: [{
-                            offset: 0,
-                            color: '#02ddff'
-                        }, {
-                            offset: 1,
-                            color: '#00feff'
-                        }]
+                lineStyle: {
+                        color: '#ccc'
                     }
                 },
-            },
-            max: 1,
+        }, {
+            type: 'value',
+            name: '时长',
+            position: 'left',
+            axisLine: {
+                lineStyle: {
+                        color: '#ccc'
+                    }
+             },
+        }],
+        series: [{
+            name: '增速',
+            type: 'line',
             label: {
-                normal: {
-                    show: true,
-                    position: 'left',
-                    color: '#fff',
-                    fontSize: 14,
-                    formatter: function(param) {
-                        if(param.dataIndex=='0'){
-                            return data.dataCost[param.dataIndex] + '元';
-                        }
-                        if(param.dataIndex=='1'){
-                           return data.dataCost[param.dataIndex];
-                        }
-                        if(param.dataIndex=='2'){
-                          return data.dataCost[param.dataIndex] + '万';
-                        }
-
-                    },
-                }
-            },
-            labelLine: {
-                show: true,
-            },
-            z: 2,
-            data: data.cost,
+                    normal: {
+                        show: true,
+                        position: 'top',
+                    }
+                },
+            lineStyle: {
+                    normal: {
+                        width: 3,
+                        shadowColor: 'rgba(0,0,0,0.4)',
+                        shadowBlur: 10,
+                        shadowOffsetY: 10
+                    }
+                },
+            data: data.growth
+        }, {
+            name: '上月',
+            type: 'bar',
+            yAxisIndex: 1,
+            label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
+            data: data.last_month
+        }, {
+            name: '本月',
+            type: 'bar',
+            yAxisIndex: 1,
+            label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
+            data: data.this_month
         }]
     };
-    var histogramChart1 = echarts.init(document.getElementById('echart3'));
-    histogramChart1.setOption(option);
+    var mychart = echarts.init(document.getElementById('echart3'));
+    mychart.setOption(option);
 }
 
-function init4(){
+function init4(id_str, data1){
 
     var last_month_data = [120, 132, 101, 134, 90, 230, 210]
     var this_month_data = [220, 182, 191, 234, 290, 330, 310]
@@ -334,12 +463,22 @@ function init4(){
                         '8','9','10','11','12','13','14',
                         '15','16','17','18','19','20','21',
                         '22','23','24','25','26','27','28',
-                        '29','30','31']
+                        '29','30','31'],
+                axisLine: {
+                lineStyle: {
+                    color: '#ccc'
+                }
+            },
             }
         ],
         yAxis : [
             {
-                type : 'value'
+                type : 'value',
+                axisLine: {
+                lineStyle: {
+                    color: '#ccc'
+                }
+            },
             }
         ],
         series : [
@@ -363,7 +502,7 @@ function init4(){
           histogramChart1.setOption(option);
 }
 
-function init5(){
+function init5(id_str, data1){
     // https://echarts.baidu.com/examples/editor.html?c=treemap-drill-down
     // var uploadedDataURL = "data/asset/data/ec-option-doc-statistics-201604.json";
     //     $.getJSON(uploadedDataURL, function (rawData) {}
@@ -462,7 +601,7 @@ function init5(){
 
 }
 
-function init6() {
+function init6(id_str, data1) {
     // https://gallery.echartsjs.com/editor.html?c=bubble-gradient
     var myChart = echarts.init(document.getElementById('echart6'));
     var data = {
@@ -549,7 +688,6 @@ function init6() {
                     color: 'rgba(255, 255, 255, 0.7)'
                 }
             }],
-
             grid: {
                 top: 50,
                 bottom: 25,
@@ -654,7 +792,7 @@ function init6() {
     myChart.setOption(option);
 }
 
-function init7(){
+function init7(id_str, data1){
     var data={
         "legend":['展现','点击','访问','咨询','订单'],
         "value":[
@@ -714,7 +852,7 @@ function init7(){
     mychart.setOption(option);
 }
 
-function init8(){
+function init8(id_str, data1){
     var data={
         "legend":['展现','点击','访问','咨询','订单'],
         "value":[
@@ -733,17 +871,14 @@ function init8(){
           },
              top: 20,
         },
-
         calculable: true,
         series: [
             {
                 type:'funnel',
                 left: '10%',
-                top: 60,
-                //x2: 80,
-                bottom: 30,
+                top: "20%",
+                bottom: "10%",
                 width: '80%',
-                // height: {totalHeight} - y - y2,
                 min: 0,
                 max: 100,
                 minSize: '0%',
