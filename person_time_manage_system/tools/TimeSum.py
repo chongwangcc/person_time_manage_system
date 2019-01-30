@@ -336,10 +336,6 @@ def get_every_day_category_details(result_list, day_padding=7):
     return result
 
 
-
-
-
-
 if __name__ == "__main__":
     result_list, missing_info = get_sum_list("mm", "2019-01-13", "2019-01-19")
 

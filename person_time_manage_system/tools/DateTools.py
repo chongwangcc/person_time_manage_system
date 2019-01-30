@@ -22,3 +22,12 @@ def calc_week_begin_end_date(date_str):
     monday = minDate.strftime('%Y-%m-%d')
     sunday = maxDate.strftime('%Y-%m-%d')
     return monday, sunday
+
+
+def calc_delta_seconrds(date1, date2):
+    """
+    计算两个字符串的时间差
+    :param date1:
+    :param date2:
+    :return:
+    """

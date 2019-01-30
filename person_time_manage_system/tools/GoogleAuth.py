@@ -54,17 +54,30 @@ def get_credentials(user_name):
     return credentials
 
 
-def get_service(user_name):
+def get_service(user_name, credential_path=None, proxy=None):
     """
     获得日历的server
     :return:
     """
-    credentials = get_credentials(user_name)
-    http = httplib2.Http(proxy_info=httplib2.ProxyInfo(
-        httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080))
-    http = credentials.authorize(http)
-    service = discovery.build('calendar', 'v3', http=http)
-    return service
+    # 获得授权文件
+    if credential_path is None:
+        credentials = get_credentials(user_name)
+    else:
+        store = Storage(credential_path)
+        credentials = store.get()
+
+    # 设置代理
+    if proxy is None:
+        http = httplib2.Http(proxy_info=httplib2.ProxyInfo(
+            httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080))
+        http = credentials.authorize(http)
+        service = discovery.build('calendar', 'v3', http=http)
+        return service
+    else:
+        http = httplib2.Http(proxy_info=proxy)
+        http = credentials.authorize(http)
+        service = discovery.build('calendar', 'v3', http=http)
+        return service
 
 
 def get_calender_id(credential_service, name=u"时间日志"):
