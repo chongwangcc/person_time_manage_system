@@ -249,6 +249,139 @@ def monthly_statistics(date_str):
     return jsonify(result)
 
 
+@app.route("/api/v1/statistics/yearly/all/<date_str>", methods=["GET"])
+@login_required
+def yearly_statistics(date_str):
+    """
+    获得每年的统计数据
+    :param date_str 月份字符串，例如：2019:
+    :return:
+    """
+    # TODO 查找缓存，获得每月数据
+    print(date_str)
+
+    #构造结果
+    result={}
+    result["year"] = "2019"
+    result["end_date"] = "01-29"
+    result["working_tomato_nums"] = "40"
+    result["study_tomato_nums"] = "60"
+    result["workout_nums"] = "10"
+    result["workout_hours"] = "45"
+
+    #1. 本月主题词云
+    result["word_cloud"] = [
+                        {
+                            "name": 'Sam S Club',
+                            "value": 10000,
+                        }, {
+                            "name": 'Macys',
+                            "value": 6181
+                        }, {
+                            "name": 'Amy Schumer',
+                            "value": 4386
+                        }, {
+                            "name": 'Jurassic World',
+                            "value": 4055
+                        }, {
+                            "name": 'Charter Communications',
+                            "value": 2467
+                        }, {
+                            "name": 'Chick Fil A',
+                            "value": 2244
+                        }, {
+                            "name": 'Planet Fitness',
+                            "value": 1898
+                        }, {
+                            "name": 'Pitch Perfect',
+                            "value": 1484
+                        }, {
+                            "name": 'Express',
+                            "value": 1112
+                        }, {
+                            "name": 'Home',
+                            "value": 965
+                        }, {
+                            "name": 'Johnny Depp',
+                            "value": 847
+                        }, {
+                            "name": 'Lena Dunham',
+                            "value": 582
+                        }, {
+                            "name": 'Lewis Hamilton',
+                            "value": 555
+                        }, {
+                            "name": 'KXAN',
+                            "value": 550
+                        }, {
+                            "name": 'Mary Ellen Mark',
+                            "value": 462
+                        }, {
+                            "name": 'Farrah Abraham',
+                            "value": 366
+                        }, {
+                            "name": 'Rita Ora',
+                            "value": 360
+                        }, {
+                            "name": 'Serena Williams',
+                            "value": 282
+                        }, {
+                            "name": 'NCAA baseball tournament',
+                            "value": 273
+                        }, {
+                            "name": 'Point',
+                            "value": 273
+                        }, {
+                            "name": 'Point Break',
+                            "value": 265
+                        }]
+
+    #2. 每周时间走势图
+    result["every_week_category_details"] = {'xData': ['2019-02-03'], 'legends': ['杂', '睡觉'], 'data': [[2.25], [7.5]], 'sum': [9.75]}
+
+    # 3. 类别分布矩形图
+    result["category_rectangle"]={
+        "工作":{
+            "$count":12,
+            "开发":{
+                 "$count":34,
+            },
+            "运维":{
+                 "$count":46,
+            },
+            "开会":{
+                 "$count":78,
+            },
+        },
+        "学习":{
+            "$count":12,
+            "时间日志":{
+                 "$count":34,
+            },
+            "看书":{
+                 "$count":780,
+            },
+            "写笔记":{
+                 "$count":100,
+            },
+        },
+        "运动": {
+            "$count": 12,
+            "健身房": {
+                "$count": 34,
+            },
+            "跑步": {
+                "$count": 780,
+            },
+            "遛弯": {
+                "$count": 100,
+            },
+        }
+    }
+
+    return jsonify(result)
+
+
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():
@@ -259,6 +392,13 @@ def timesum():
 @login_required
 def monthlySum():
     return render_template("monthly.html", user_name=current_user.user_name)
+
+
+@app.route("/yearlySum/", methods=["GET"])
+@login_required
+def yearlySum():
+    return render_template("yearly.html", user_name=current_user.user_name)
+
 
 
 @app.route("/login", methods=['GET', 'POST'])
