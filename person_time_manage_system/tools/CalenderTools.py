@@ -90,10 +90,10 @@ class CalenderServer:
         # 1. 判断日期是不在指定范围内
         for t_time in list_result:
             t_date_str = t_time[3]
-            if t_date_str < start_date_str or start_date_str > end_date_str:
+            if t_date_str < start_date_str or t_date_str > end_date_str:
                 continue
             valid_result_list.append(t_time)
-        if len(valid_result_list)<=1:
+        if len(valid_result_list) <= 1:
             return valid_result_list, missing_during
 
         # 2. 判断有没有漏掉/重叠的时段
@@ -123,7 +123,7 @@ class CalenderServer:
 
     def get_time_details(self, userinfo, start_date, end_date):
         """
-        获得时间的明细，
+        获得时间的明细，包含开始日期，不包含结束日期
         :param userinfo: 用户信息
         :param start_date:  开始日期
         :param end_date:  结束日期
@@ -150,13 +150,10 @@ class CalenderServer:
             time_list = GoogleAuth.get_calender_content(service, calendar_id, time_min, time_max)
 
             # 4. 格式化字符串
-            time_list_format = self.standard_content_list(userinfo.user_name, time_list)
+            time_list_format = self.standard_content_list(userinfo.id, time_list)
 
-            #5. 过滤筛选 结果，日期不在指定范围内的不要
+            # 5. 过滤筛选 结果，日期不在指定范围内的不要
             final_result, missing_during = self.calc_missing_during(time_list_format, start_date, end_date)
-
-            print(time_list_format)
-            print(missing_during)
             return final_result, missing_during
         else:
             print("calender server ["+userinfo.calender_server+"] not support yet" )

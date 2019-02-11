@@ -35,6 +35,7 @@ class Time_Details(Model):
     """
     user_id = ForeignKey(User_Info)
     date_str = CharField(10)
+    week_nums = IntegerField(1)
     category = CharField(16)
     start_time = CharField(10)
     end_time = CharField(10)
@@ -60,6 +61,7 @@ class Everyday_Cache(Model):
     category = CharField(16)
     during = IntegerField()
     nums = IntegerField()
+    word_cloud = CharField()
 
     def __str__(self):
         return str(self.to_dict())
@@ -81,6 +83,7 @@ class Every_week_Cache(Model):
     category = CharField(10)
     during = IntegerField()
     nums = IntegerField()
+    word_cloud = CharField()
 
     def __str__(self):
         return str(self.to_dict())
@@ -116,23 +119,23 @@ class Every_month_Cache(Model):
 if __name__ == "__main__":
     g_sqlite3_path = "./data/sqlit3.db"
     set_db_name(g_sqlite3_path)
-    # userinfo = User_Info()
-    # userinfo.user_name="cc"
-    # userinfo.password="123456"
-    # userinfo.active=1
-    # userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
-    # userinfo.calender_server = "google"
-    # userinfo.calender_name = "时间日志"
-    # userinfo.save()
-    #
-    # userinfo = User_Info()
-    # userinfo.user_name="mm"
-    # userinfo.password="123456"
-    # userinfo.active=1
-    # userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
-    # userinfo.calender_server = "google"
-    # userinfo.calender_name = "时间日志"
-    # userinfo.save()
+    userinfo = User_Info()
+    userinfo.user_name="cc"
+    userinfo.password="123456"
+    userinfo.active=1
+    userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
+    userinfo.calender_server = "google"
+    userinfo.calender_name = "时间日志"
+    userinfo.save()
+
+    userinfo = User_Info()
+    userinfo.user_name="mm"
+    userinfo.password="123456"
+    userinfo.active=1
+    userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
+    userinfo.calender_server = "google"
+    userinfo.calender_name = "时间日志"
+    userinfo.save()
 
 
     # userinfo = User_Info.get(user_name="cc")

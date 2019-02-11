@@ -58,7 +58,7 @@ def calc_same_days_delta(date_start, time_start,end_date_str,  time_end):
     :param time_end:
     :return:
     """
-    weeknum = cacl_week_num(date_start)
+    weeknum = calc_week_num(date_start)
     during = calc_delta_seconds(date_start + " " + time_start,
                                 end_date_str + " " + time_end)
     during = round(during/60)
@@ -68,7 +68,7 @@ def calc_same_days_delta(date_start, time_start,end_date_str,  time_end):
     return [ date_start, weeknum, time_start, time_end, during]
 
 
-def cacl_week_num(date_str):
+def calc_week_num(date_str):
     """
     计算日期字符串 是星期几
     :param date_str: 格式例如 2019-01-01
@@ -101,8 +101,52 @@ def gen_day_list_between(date1, date2):
     return date_list
 
 
+def gen_week_list_in_days(date_list):
+    """
+    计算一串日期中，包含的周日期
+    :param date_list: ["2019-01-01", "2019-01-03","2019-01-03",]
+    :return: 周的起始日期 ["2019-01-01"]
+    """
+    r_weekly = set()
+    for t_day in date_list:
+        t_dd = calc_week_begin_end_date(t_day)
+        r_weekly.add(t_dd)
+    l_result = list(r_weekly)
+    l_result.sort()
+    # l_result = [t[0] for t in l_result]
+    return l_result
+
+
+def gen_month_list_in_days(date_list):
+    """
+    计算一串日期中，包含的月份列表
+    :param date_list:  ["2019-01-01", "2019-01-03","2019-01-03",]
+    :return: 月份 ["2019-01"]
+    """
+    l_result = [t[:7] for t in date_list]
+    l_result = list(set(l_result))
+    l_result.sort()
+    return l_result
+
+
+def gen_year_list_in_days(date_list):
+    """
+    计算一串日期中，包含的年份列表
+    :param date_list: ["2019-01-01", "2019-01-03","2019-01-03",]
+    :return: 年份 ["2019-01"]
+    """
+    l_result = [t[:4] for t in date_list]
+    l_result = list(set(l_result))
+    l_result.sort()
+    return l_result
+
+
 if __name__ == "__main__":
-    dd = gen_day_list_between("2019-01-01", "2019-01-02")
+    dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
+    print(dd)
+    dd = gen_month_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
+    print(dd)
+    dd = gen_year_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
     print(dd)
 
 
