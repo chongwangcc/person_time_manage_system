@@ -448,8 +448,25 @@ function init5(id_str, data1){
     }
     var data = [];
     convert(data_json, data, '');
+    var formatUtil = echarts.format;
     var myChart = echarts.init(document.getElementById(id_str));
     myChart.setOption(option = {
+         tooltip: {
+            formatter: function (info) {
+                var value = info.value;
+                var treePathInfo = info.treePathInfo;
+                var treePath = [];
+
+                for (var i = 1; i < treePathInfo.length; i++) {
+                    treePath.push(treePathInfo[i].name);
+                }
+
+                return [
+                    '<div class="tooltip-title">' + formatUtil.encodeHTML(treePath.join('/')) + '</div>',
+                    '用时: ' + formatUtil.addCommas(value) + ' 小时',
+                ].join('');
+            }
+        },
         series: [{
             type: 'treemap',
             visibleMin: 300,

@@ -11,13 +11,14 @@
     <link rel="stylesheet" href="/resources/demos/style.css">
 
 
+
     <script src="../static/scripts/Plugin/laydate/laydate.js"></script>
     <script src="../static/scripts/Plugin/jquery.min.js"></script>
     <script src="../static/scripts/Plugin/jquery-ui.min.js"></script>
     <script src="../static/scripts/Plugin/echarts.min.js"></script>
-
+    <script src="../static/scripts/Plugin/echarts-wordcloud.min.js"></script>
     <!--<script src="../static/scripts/Plugin/bmap.min.js"></script>-->
-    <script src="../static/scripts/index.js"></script>
+    <script src="../static/scripts/yearly.js"></script>
     <!--<script src="../static/scripts/Plugin/dcalendar.picker.js"  type="text/javascript"></script>-->
 </head>
 <body>
@@ -25,9 +26,9 @@
 <header class="header left">
     <div class="left nav">
         <ul>
-            <li class="nav_active"><i class="nav_1"></i><a href="/weeksum">每周概况</a> </li>
+            <li><i class="nav_1"></i><a href="/weeksum">每周概况</a> </li>
             <li><i class="nav_2"></i><a href="/monthlySum">每月概况</a> </li>
-            <li><i class="nav_2"></i><a href="/yearlySum">每年概况</a> </li>
+            <li  class="nav_active"><i class="nav_2"></i><a href="/yearlySum">每年概况</a> </li>
         </ul>
     </div>
     <div class="header_center left" style="position:relative">
@@ -49,7 +50,7 @@
                 <img id="img_datepicker" src="../static/images/info_1.png" class="left text01_img"/>
                 <input type="text" id="datepicker" hidden="true">
                 <div class="left text01_div">
-                    <p >开始日期</p>
+                    <p >年份</p>
                     <p id="id_start_date"></p>
                 </div>
             </div>
@@ -84,56 +85,36 @@
                 <img src="../static/images/info_5.png" class="left text01_img"/>
                 <div class="left text01_div">
                     <p>运动总次数(次)</p>
-                    <p id="exercise_nums" class="org"></p>
+                    <p id="workout_nums" class="org"></p>
                 </div>
             </div>
             <div class="con_div_text01 right">
                 <img src="../static/images/info_6.png" class="left text01_img"/>
                 <div class="left text01_div">
-                    <p>娱乐总次数(次)</p>
-                    <p id="fun_nums" class="org"></p>
+                    <p>运动总时长(h)</p>
+                    <p id="workout_hours" class="org"></p>
                 </div>
             </div>
         </div>
     </div>
     <!--统计分析图-->
     <div class="div_any">
-        <div class="left div_any01">
-            <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_1.png">学习工作番茄达标率</div>
-                <p id="Chart1" class="p_chart"></p>
-            </div>
-            <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_2.png">睡眠周期走势</div>
-                <p id="Chart2" class="p_chart"></p>
-            </div>
-        </div>
-        <div class="div_any02 left ">
+        <div class="left div_any04">
             <div class="div_any_child div_height">
-                <div class="div_any_title any_title_width"><img src="../static/images/title_0.png">各类时间汇总 </div>
-                <div id="Chart3" style="width:97.5%;height:95%;display: inline-block;padding-left: 1.25%;padding-top:2.2%"></div>
+                <div class="div_any_title"><img src="../static/images/title_1.png">本年度词云图</div>
+                <p id="Chart1" class="p_chart2"></p>
             </div>
         </div>
-        <div class="right div_any01">
-            <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_3.png">各类时间占比图</div>
-                <p id="Chart4" class="p_chart"></p>
+        <div class="left div_any02 ">
+            <div class="div_any_child div_height">
+                <div class="div_any_title any_title_width"><img src="../static/images/title_0.png">每周时长走势图 </div>
+                <div id="Chart2" style="width:97.5%;height:95%;display: inline-block;padding-left: 1.25%;padding-top:2.2%"></div>
             </div>
-            <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_4.png">重叠/未填时段</div>
-                <div class="table_p" style="height: 96%;margin-top: 20px;">
-                      <table height="10px">
-                          <thead><tr>
-                              <th>开始时间</th>
-                              <th>结束时间</th>
-                              <th>时长（分钟）</th>
-                              <th>类别</th>
-                          </tr>
-                          </thead>
-                          <tbody id="Chart5">
-                          </tbody>
-                      </table>
-                 </div>
+        </div>
+        <div class="right div_any04 ">
+            <div class="div_any_child div_height" >
+                <div class="div_any_title"><img src="../static/images/title_3.png">各类时间矩形图</div>
+                <p id="Chart3" class="p_chart2"></p>
             </div>
         </div>
     </div>
@@ -145,7 +126,7 @@
     window.onresize=function(){
     setTimeout(function(){
 
-        var ids = ["Chart1", "Chart2", "Chart3", "Chart4", "Chart5"]
+        var ids = ["Chart1", "Chart2", "Chart3"]
         for (var i=0;i<ids.length;i++)
         {
             myChart = echarts.init(document.getElementById(ids[i]))
