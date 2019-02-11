@@ -9,7 +9,7 @@
 
 from Entity import *
 
-g_sqlite3_path="./data/sqlit3.db"
+g_sqlite3_path = "./data/sqlit3.db"
 set_db_name(g_sqlite3_path)
 
 
@@ -232,10 +232,9 @@ if __name__ == "__main__":
         time_details.nums = 12
         detail_list.append(time_details)
 
-    save_everyweek_cache(user_info.id,"2019-01-02", detail_list)
+    save_everyweek_cache(user_info.id, "2019-01-02", detail_list)
 
-
-    de = get_time_details(3,start_date="2019-01-01", end_date="2019-01-01")
+    de = get_time_details(3, start_date="2019-01-01", end_date="2019-01-01")
     print(de)
 
 

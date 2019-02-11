@@ -87,7 +87,7 @@ def standard_content_list(min_time_str, max_time_str, list_result):
                                                  month=(date_s + datetime.timedelta(days=day_delta+1)).month,
                                                  day=(date_s + datetime.timedelta(days=day_delta+1)).day,
                                                  hour=0, minute=0, second=0)
-            if day_delta == 0 :
+            if day_delta == 0:
                 t_start_datetime = date_s
 
             if day_delta == days_delta_total:
