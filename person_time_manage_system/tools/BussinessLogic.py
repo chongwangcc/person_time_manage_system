@@ -13,9 +13,12 @@ import time
 import SqlTools
 import CalenderTools
 import DateTools
-from Entity import Time_Details
+from Entity import Time_Details,Everyday_Cache
+# 0. pd 打印调试开关
+import pandas as pd
+pd.set_option('display.max_columns', None)
 
-
+# 一些全局队列
 network_calender_query_queue = queue.Queue()    # 网络查询日历的任务队列
 cache_calc_queue = queue.Queue()  # 计算缓存任务的队列
 statistics_cache = {}  # 缓存对象
@@ -66,26 +69,51 @@ class CacherCalcService:
         :param cache_task:  CacheCalcTask对象
         """
         self.cache_task = cache_task
+        self.details_df = None
+        self.dayly_cache_str_map = None
 
-    def load_date_details(self):
+    def load_date_details(self, force=False):
         """
         加载数据明细，从数据库中读数据明细
         # 计算缓存时，假设数据都已经同步到缓存中了
         :return:
         """
-        self.date_datails = None
-
-        result_list = SqlTools.get_time_details(self.cache_task.user_info.id,
-                                  self.cache_task.start_date_str,
-                                  self.cache_task.end_date_str)
-        print(result_list)
+        if self.details_df is None or force:
+            details_df = SqlTools.get_time_details_df(self.cache_task.user_info.id,
+                                      self.cache_task.start_date_str,
+                                      self.cache_task.end_date_str)
+            self.details_df = details_df
 
     def calc_dayly_cache(self):
         """
-        TODO 计算某一天的缓存数据
+        计算某一天的缓存数据
+        前提条件：每天的明细数据已经入库了
         :return:
         """
-        return []
+        # 1. 分组统计结果
+        group_day = self.details_df.groupby(by=["date_str", "category"])
+        during_sum_df = group_day["during"].sum().reset_index()
+        description_df = group_day["description"].aggregate(lambda x: ",".join(x)).reset_index()
+        count_df = group_day["during"].count().reset_index()
+        df_final = during_sum_df
+        df_final["word_cloud"] = description_df["description"]
+        df_final["nums"] = count_df["during"]
+        df_final["user_id"] = self.cache_task.user_info.id
+
+        # 2. 保存缓存到数据库中
+        self.dayly_cache_str_map = {}
+        for index, row in df_final.iterrows():
+            day_cache = Everyday_Cache()
+            day_cache.user_id = row["user_id"]
+            day_cache.date_str = row["date_str"]
+            day_cache.category = row["category"]
+            day_cache.during = row["during"]
+            day_cache.nums = row["nums"]
+            day_cache.word_cloud = row["word_cloud"]
+            m_ll = self.dayly_cache_str_map.setdefault(row["date_str"], [])
+            m_ll.append(day_cache)
+        return self.dayly_cache_str_map
+
 
     def calc_weekly_cache(self):
         """
@@ -113,6 +141,7 @@ class CacherCalcService:
         计算，返回值
         :return:
         """
+        self.load_date_details()
         result = None
         if self.cache_task.freq in ["day"]:
             result = self.calc_dayly_cache()
@@ -129,6 +158,11 @@ class CacherCalcService:
         TODO 将缓存结果保存到 数据库中
         :return:
         """
+        if self.dayly_cache_str_map is not None:
+            for key, value in self.dayly_cache_str_map.items():
+                SqlTools.save_everyday_cache(self.cache_task.user_info.id,
+                                             key,
+                                             value)
 
 
 def add_calender_query_task(query_task):
@@ -163,13 +197,16 @@ def calder_query_func():
     while True:
         # 1. 阻塞获取  远程查询任务
         query_task = network_calender_query_queue.get(block=True)  # CalenderQueryTask 对象
+        if query_task is None:
+            time.sleep(1)
+            continue
         # 2. 调用网络层，获得数据
         calender_server = CalenderTools.CalenderServer()
         final_result, missing_during = calender_server.get_time_details(query_task.user_info,
                                          start_date=query_task.start_date,
                                          end_date=query_task.end_date)
-        print(final_result)
-        print(missing_during)
+        # print(final_result)
+        # print(missing_during)
         # 3. 保存到 数据库中
         t_date_str_map = {}
         for res in final_result:
@@ -177,7 +214,7 @@ def calder_query_func():
             time_detail_model = Time_Details()
             time_detail_model.user_id = res[0]
             time_detail_model.category = res[1]
-            time_detail_model.descrition = res[2]
+            time_detail_model.description = res[2]
             time_detail_model.date_str = res[3]
             time_detail_model.week_nums = res[4]
             time_detail_model.start_time = res[5]
@@ -220,10 +257,6 @@ def calder_query_func():
                                               t_yearly+"12-31")
             add_cache_calc_task(t_cachercalc_task)
 
-
-
-
-
         # 5. 休眠一下
         time.sleep(1)
 
@@ -241,17 +274,18 @@ def cache_calc_func():
         # 2. 计算缓存
         cache_service = CacherCalcService(cache_task)
         json_result = cache_service.calc()
-        cache_service.save()
+        cache_service.save()  # 保存到mysql数据库中
 
-        # 3. TODO 将JSON添加到缓存中
+        # 3. TODO 将JSON添加到缓存内存中
 
 
-if __name__ == "__main__":
-    # 1.添加一个任务到队列中
-    user_info = SqlTools.fetch_userInfo("cc")
-    query_task = CalenderQueryTask(user_info, "2019-02-10", "2019-02-17")
-    add_calender_query_task(query_task)
-
+def start():
+    """
+    开启后台线程
+    :return:
+    """
+    # 1.创建数据库，插入默认用户信息
+    SqlTools.insert_default_user()
     # 2. 开启线程
     th1 = threading.Thread(target=calder_query_func)  # 查询calendar 线程
     th2 = threading.Thread(target=cache_calc_func)  # 查询calendar 线程
@@ -259,7 +293,20 @@ if __name__ == "__main__":
     for t in threads:
         t.setDaemon(True)
         t.start()
-    t.join()
+    # 3.等待线程结束，阻塞状态
+    # t.join()
+
+if __name__ == "__main__":
+    # 2. 开启线程
+    start()
+
+    # 1.添加一个任务到队列中
+    user_info = SqlTools.fetch_userInfo("cc")
+    query_task = CalenderQueryTask(user_info, "2019-02-10", "2019-02-17")
+    add_calender_query_task(query_task)
+
+    aa = input()
+
 
 
 

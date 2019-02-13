@@ -28,6 +28,25 @@ class User_Info(Model):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
 
+    @staticmethod
+    def is_user_exist():
+        """
+        判断user_info表是否为空
+        :return:
+        """
+        try:
+            sql = "select * from %s limit 1" \
+                  % (__class__.__name__.lower())
+            cu = get_cursor()
+            execute_sql(cu, sql)
+            rows = cu.fetchall()
+            if len(rows) >= 1 :
+                return True
+        except:
+            lock.release()
+            pass
+        return False
+
 
 class Time_Details(Model):
     """
@@ -40,7 +59,7 @@ class Time_Details(Model):
     start_time = CharField(10)
     end_time = CharField(10)
     during = IntegerField()
-    descrition = CharField()
+    description = CharField()
 
     def __str__(self):
         return str(self.to_dict())
@@ -50,6 +69,10 @@ class Time_Details(Model):
         for key, value in zip(self.field_names,self.field_values):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
+
+    @staticmethod
+    def get_table_name():
+        return __class__.__name__.lower()
 
 
 class Everyday_Cache(Model):
@@ -116,7 +139,10 @@ class Every_month_Cache(Model):
         return dict_my
 
 
+
 if __name__ == "__main__":
+    print(Time_Details.get_table_name())
+
     g_sqlite3_path = "./data/sqlit3.db"
     set_db_name(g_sqlite3_path)
     userinfo = User_Info()

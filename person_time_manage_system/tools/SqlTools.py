@@ -8,6 +8,7 @@
 
 
 from Entity import *
+import pandas as pd
 
 g_sqlite3_path = "./data/sqlit3.db"
 set_db_name(g_sqlite3_path)
@@ -61,6 +62,19 @@ def fetch_userInfo(user_name):
     except:
         pass
     return None
+
+
+def get_time_details_df(user_id, start_date, end_date):
+    """
+    获得时间明细的记录
+    :param user_id:
+    :param start_date: 包含前者，包含后者
+    :param end_date:
+    :return: Dataframe
+    """
+    conn = sqlite3.connect(g_sqlite3_path)
+    time_details_df = pd.read_sql_query("select * from "+Time_Details.get_table_name(), conn)
+    return time_details_df
 
 
 def get_time_details(user_id, start_date, end_date):
@@ -215,27 +229,59 @@ def save_everymonth_cache(user_id, date_str, cache_list):
     return True
 
 
+def insert_default_user():
+    """
+    插入默认的用户，只有当表内容为空时，才执行这个
+    :return:
+    """
+    if not User_Info.is_user_exist():
+        print("insert default user cc, mm")
+        global g_sqlite3_path
+        set_db_name(g_sqlite3_path)
+
+        userinfo = User_Info()
+        userinfo.user_name = "cc"
+        userinfo.password = "123456"
+        userinfo.active = 1
+        userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
+        userinfo.calender_server = "google"
+        userinfo.calender_name = "时间日志"
+        userinfo.save()
+
+        userinfo = User_Info()
+        userinfo.user_name="mm"
+        userinfo.password="123456"
+        userinfo.active=1
+        userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
+        userinfo.calender_server = "google"
+        userinfo.calender_name = "时间日志"
+        userinfo.save()
+
+
 if __name__ == "__main__":
     pass
     # create_table("drop")
     # create_table()
-    user_info = fetch_userInfo("cc")
-    print(user_info)
-    detail_list = []
-    for i in range(10):
-        time_details=Every_week_Cache()
-        time_details.user_id = user_info.id
-        time_details.start_date_str = "2019-01-02"
-        time_details.end_date_str = "2019-01-02"
-        time_details.category ="运动"
-        time_details.during = 25
-        time_details.nums = 12
-        detail_list.append(time_details)
+    # user_info = fetch_userInfo("cc")
+    # print(user_info)
+    # detail_list = []
+    # for i in range(10):
+    #     time_details=Every_week_Cache()
+    #     time_details.user_id = user_info.id
+    #     time_details.start_date_str = "2019-01-02"
+    #     time_details.end_date_str = "2019-01-02"
+    #     time_details.category ="运动"
+    #     time_details.during = 25
+    #     time_details.nums = 12
+    #     detail_list.append(time_details)
+    #
+    # save_everyweek_cache(user_info.id, "2019-01-02", detail_list)
+    #
+    # de = get_time_details(3, start_date="2019-01-01", end_date="2019-01-01")
+    # print(de)
+    insert_default_user()
 
-    save_everyweek_cache(user_info.id, "2019-01-02", detail_list)
-
-    de = get_time_details(3, start_date="2019-01-01", end_date="2019-01-01")
-    print(de)
+    print(User_Info.is_user_exist())
 
 
 
