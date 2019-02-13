@@ -7,21 +7,34 @@
 # @Software: PyCharm
 
 from datetime import datetime, timedelta
+import calendar
 
 
 def calc_week_begin_end_date(date_str):
     """
-    计算某天的周一、周六的日期
+    计算某天的所在星期的 周一、周日的日期
     :param date_str: 格式例如 2019-01-01
     :return:
     """
     m_date = datetime.strptime(date_str, '%Y-%m-%d')
-    week = m_date.weekday()
-    minDate = m_date + timedelta(days=(-1 - week))
-    maxDate = m_date + timedelta(days=(6 - week))
+    week = (m_date.weekday()+1) % 7
+    minDate = m_date + timedelta(days=- week)
+    maxDate = m_date + timedelta(days=6 - week)
     monday = minDate.strftime('%Y-%m-%d')
     sunday = maxDate.strftime('%Y-%m-%d')
     return monday, sunday
+
+def calc_month_begin_end_date(date_str):
+    """
+    计算某天所在月份的第一天，最后一天的日期
+    :param date_str:
+    :return:
+    """
+    minDate = date_str[:7]+"-01"
+    # 获取当月第一天的星期和当月的总天数
+    firstDayWeekDay, lastday = calendar.monthrange(int(date_str[:4]), int(date_str[5:7]))
+    maxDate = date_str[:7]+"-"+str(lastday)
+    return minDate, maxDate
 
 
 def calc_delta_seconds(date_start, date_end):
@@ -142,11 +155,13 @@ def gen_year_list_in_days(date_list):
 
 
 if __name__ == "__main__":
-    dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
-    print(dd)
-    dd = gen_month_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
-    print(dd)
-    dd = gen_year_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
+    # dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
+    # print(dd)
+    # dd = gen_month_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
+    # print(dd)
+    # dd = gen_year_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
+    # print(dd)
+    dd = calc_month_begin_end_date("2019-02-01")
     print(dd)
 
 

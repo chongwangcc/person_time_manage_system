@@ -13,7 +13,7 @@ import time
 import SqlTools
 import CalenderTools
 import DateTools
-from Entity import Time_Details,Everyday_Cache
+from Entity import Time_Details,Everyday_Cache,Every_week_Cache,Every_month_Cache
 # 0. pd 打印调试开关
 import pandas as pd
 pd.set_option('display.max_columns', None)
@@ -71,6 +71,11 @@ class CacherCalcService:
         self.cache_task = cache_task
         self.details_df = None
         self.dayly_cache_str_map = None
+        self.dayly_cache_df = None
+        self.weekly_cache_df = None
+        self.weekly_cache_str_map = None
+        self.monthly_cache_str_map = None
+        self.monthly_cache_df = None
 
     def load_date_details(self, force=False):
         """
@@ -99,6 +104,7 @@ class CacherCalcService:
         df_final["word_cloud"] = description_df["description"]
         df_final["nums"] = count_df["during"]
         df_final["user_id"] = self.cache_task.user_info.id
+        self.dayly_cache_df = df_final
 
         # 2. 保存缓存到数据库中
         self.dayly_cache_str_map = {}
@@ -117,17 +123,87 @@ class CacherCalcService:
 
     def calc_weekly_cache(self):
         """
-        TODO 计算某一周的cache
+        计算某一周的cache
+        前提条件：每天的缓存数据已经入库了，并且是最新的
         :return: 返回json串
         """
+        # 1. 判断要不要从数据库中读数据
+        if self.dayly_cache_df is None:
+            dayly_cache_df = SqlTools.get_everyday_cache_df(self.cache_task.user_info.id,
+                                                      self.cache_task.start_date_str,
+                                                      self.cache_task.end_date_str)
+            self.dayly_cache_df = dayly_cache_df
+        if len(self.dayly_cache_df) == 0:
+            return None
+
+        # 2. 计算每周的缓存
+        self.dayly_cache_df["start_date_str"] = self.dayly_cache_df["date_str"]\
+                                                        .map(lambda x: DateTools.calc_week_begin_end_date(x)[0])
+        self.dayly_cache_df["end_date_str"] = self.dayly_cache_df["date_str"]\
+                                                        .map(lambda x: DateTools.calc_week_begin_end_date(x)[1])
+        group_week = self.dayly_cache_df.groupby(by=["user_id", "start_date_str", "end_date_str", "category"])
+        during_sum_df = group_week.sum().reset_index()
+        description_df = group_week["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
+        df_final = during_sum_df
+        df_final["word_cloud"] = description_df["word_cloud"]
+        self.weekly_cache_df = df_final
+
+        # 2. 保存缓存到数据库中
+        self.weekly_cache_str_map = {}
+        for index, row in df_final.iterrows():
+            week_cache = Every_week_Cache()
+            week_cache.user_id = row["user_id"]
+            week_cache.start_date_str = row["start_date_str"]
+            week_cache.end_date_str = row["end_date_str"]
+            week_cache.category = row["category"]
+            week_cache.during = row["during"]
+            week_cache.nums = row["nums"]
+            week_cache.word_cloud = row["word_cloud"]
+            m_ll = self.weekly_cache_str_map.setdefault(row["start_date_str"], [])
+            m_ll.append(week_cache)
+        return self.weekly_cache_str_map
+
+
+        print(self.weekly_cache_df)
         return []
 
     def calc_monthly_cache(self):
         """
         TODO 计算某一月的cache
+        前提条件：每天的缓存数据已经入库了，并且是最新的
         :return: 返回json串
         """
-        return []
+        # 1. 判断要不要从数据库中读数据
+        if self.dayly_cache_df is None:
+            dayly_cache_df = SqlTools.get_everyday_cache_df(self.cache_task.user_info.id,
+                                                            self.cache_task.start_date_str,
+                                                            self.cache_task.end_date_str)
+            self.dayly_cache_df = dayly_cache_df
+        if len(self.dayly_cache_df) == 0:
+            return None
+
+        # 2. 计算每月的缓存
+        self.dayly_cache_df["month_str"] = self.dayly_cache_df["date_str"].map(lambda x: x[:7])
+        group_month = self.dayly_cache_df.groupby(by=["user_id", "month_str", "category"])
+        during_sum_df = group_month.sum().reset_index()
+        description_df = group_month["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
+        df_final = during_sum_df
+        df_final["word_cloud"] = description_df["word_cloud"]
+        self.monthly_cache_df = df_final
+
+        # 2. 保存缓存到数据库中
+        self.monthly_cache_str_map = {}
+        for index, row in df_final.iterrows():
+            month_cache = Every_month_Cache()
+            month_cache.user_id = row["user_id"]
+            month_cache.month_str = row["month_str"]
+            month_cache.category = row["category"]
+            month_cache.during = row["during"]
+            month_cache.nums = row["nums"]
+            month_cache.word_cloud = row["word_cloud"]
+            m_ll = self.monthly_cache_str_map.setdefault(row["month_str"], [])
+            m_ll.append(month_cache)
+        return self.monthly_cache_str_map
 
     def calc_yearly_cache(self):
         """
@@ -161,6 +237,17 @@ class CacherCalcService:
         if self.dayly_cache_str_map is not None:
             for key, value in self.dayly_cache_str_map.items():
                 SqlTools.save_everyday_cache(self.cache_task.user_info.id,
+                                             key,
+                                             value)
+        if self.weekly_cache_str_map is not None:
+            for key, value in self.weekly_cache_str_map.items():
+                SqlTools.save_everyweek_cache(self.cache_task.user_info.id,
+                                             key,
+                                             value)
+
+        if self.monthly_cache_str_map is not None:
+            for key, value in self.monthly_cache_str_map.items():
+                SqlTools.save_everymonth_cache(self.cache_task.user_info.id,
                                              key,
                                              value)
 
@@ -302,7 +389,7 @@ if __name__ == "__main__":
 
     # 1.添加一个任务到队列中
     user_info = SqlTools.fetch_userInfo("cc")
-    query_task = CalenderQueryTask(user_info, "2019-02-10", "2019-02-17")
+    query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
     add_calender_query_task(query_task)
 
     aa = input()

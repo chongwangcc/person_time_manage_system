@@ -95,6 +95,10 @@ class Everyday_Cache(Model):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
 
+    @staticmethod
+    def get_table_name():
+        return __class__.__name__.lower()
+
 
 class Every_week_Cache(Model):
     """
@@ -117,6 +121,10 @@ class Every_week_Cache(Model):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
 
+    @staticmethod
+    def get_table_name():
+        return __class__.__name__.lower()
+
 
 class Every_month_Cache(Model):
     """
@@ -137,6 +145,10 @@ class Every_month_Cache(Model):
         for key, value in zip(self.field_names,self.field_values):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
+
+    @staticmethod
+    def get_table_name():
+        return __class__.__name__.lower()
 
 
 

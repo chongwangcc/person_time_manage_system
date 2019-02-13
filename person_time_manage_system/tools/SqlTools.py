@@ -73,7 +73,12 @@ def get_time_details_df(user_id, start_date, end_date):
     :return: Dataframe
     """
     conn = sqlite3.connect(g_sqlite3_path)
-    time_details_df = pd.read_sql_query("select * from "+Time_Details.get_table_name(), conn)
+    sql = "select * from "+Time_Details.get_table_name()
+    sql += " where "
+    sql += " user_id == " +str(user_id) +" and "
+    sql += " date_str >= '" + start_date + "' "+" and "
+    sql += " date_str < '" + end_date + "' "
+    time_details_df = pd.read_sql_query(sql, conn)
     return time_details_df
 
 
@@ -130,6 +135,24 @@ def get_everyday_cache(user_id, start_date, end_date):
     return everyday_cache
 
 
+def get_everyday_cache_df(user_id, start_date, end_date):
+    """
+    获得每天缓存的统计数据
+    :param user_id:
+    :param start_date:
+    :param end_date:
+    :return:Dataframe
+    """
+    conn = sqlite3.connect(g_sqlite3_path)
+    sql = "select * from "+Everyday_Cache.get_table_name()
+    sql += " where "
+    sql += " user_id == " +str(user_id) +" and "
+    sql += " date_str >= '" + start_date + "' "+" and "
+    sql += " date_str < '" + end_date + "' "
+    df = pd.read_sql_query(sql, conn)
+    return df
+
+
 def save_everyday_cache(user_id, date_str, cache_list):
     """
     保存每天的缓存，先删除记录，后插入记录
@@ -140,7 +163,7 @@ def save_everyday_cache(user_id, date_str, cache_list):
     """
     # 0. 检查detail_list记录是不是全部是user_id + date_str 的记录
     b_list = [cache.user_id == user_id and date_str == cache.date_str for cache in cache_list]
-    if not all(b_list) and cache_list is not None and len(cache_list)>0:
+    if not all(b_list) and cache_list is not None and len(cache_list) > 0:
         print("cache_list 结果不对")
         return False
 

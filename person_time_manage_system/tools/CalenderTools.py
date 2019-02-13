@@ -72,6 +72,8 @@ class CalenderServer:
                 t_end_time[-2] = end_time_str
                 for i in range(len(t_date_list)-1):
                     t_time = DateTools.calc_same_days_delta(t_date_list[i], t_start_time[i], t_date_list[i], t_end_time[i])
+                    if t_time is None:
+                        continue
                     app_list = [user_id, category, description]
                     app_list.extend(t_time)
                     result.append(app_list)
