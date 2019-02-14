@@ -24,6 +24,7 @@ def calc_week_begin_end_date(date_str):
     sunday = maxDate.strftime('%Y-%m-%d')
     return monday, sunday
 
+
 def calc_month_begin_end_date(date_str):
     """
     计算某天所在月份的第一天，最后一天的日期
@@ -35,6 +36,13 @@ def calc_month_begin_end_date(date_str):
     firstDayWeekDay, lastday = calendar.monthrange(int(date_str[:4]), int(date_str[5:7]))
     maxDate = date_str[:7]+"-"+str(lastday)
     return minDate, maxDate
+
+
+def calc_year_begin_end_date(date_str):
+    minxDate = date_str[:4]+"-01-01"
+    maxDate = date_str[:4]+"-12-31"
+    return minxDate,maxDate
+
 
 def calc_next_date(date_str):
     """
