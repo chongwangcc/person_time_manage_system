@@ -580,19 +580,19 @@ def start():
 
 if __name__ == "__main__":
     # # 2. 开启线程
-    # start()
-    #
-    # # 1.添加一个任务到队列中
-    # user_info = SqlTools.fetch_userInfo("cc")
-    # query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
-    # add_calender_query_task(query_task)
-    #
-    # aa = input()
-    user_info = SqlTools.fetch_userInfo("cc")
-    task = CacheCalcTask(user_info, "week", "2018-12-30", "2019-01-05")
+    start()
 
-    calc_service = CachCalcService(web_cache)
-    calc_service.add_new_cache(task)
+    # 1.添加一个任务到队列中
+    user_info = SqlTools.fetch_userInfo("cc")
+    query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
+    add_calender_query_task(query_task)
+
+    aa = input()
+    # user_info = SqlTools.fetch_userInfo("cc")
+    # task = CacheCalcTask(user_info, "week", "2018-12-30", "2019-01-05")
+    #
+    # calc_service = CachCalcService(web_cache)
+    # calc_service.add_new_cache(task)
 
 
 

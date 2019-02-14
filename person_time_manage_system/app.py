@@ -374,7 +374,6 @@ def yearlySum():
     return render_template("yearly.html", user_name=current_user.user_name)
 
 
-
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     """
@@ -385,10 +384,10 @@ def login():
         user_name = request.form["username"]
         password = request.form["password"]
         # 判断用户密码是否正确
-        m_user = userinfomanager.get_user_info(user_name)
+        m_user = SqlTools.fetch_userInfo(user_name)
         if m_user is not None and m_user.password == password:
             # 登陆成功
-            login_user(m_user)
+            login_user(m_user, remember=True)
             # 跳转
             return redirect("/weeksum")
         else:
@@ -416,5 +415,5 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-
+    BussinessLogic.start()
     app.run(debug=True, host="0.0.0.0", port=9001)

@@ -8,7 +8,8 @@
 from nanorm import *
 from flask_login import UserMixin, AnonymousUserMixin
 
-class User_Info(Model,UserMixin):
+
+class User_Info(Model, UserMixin):
     """
     用户信息表
     """
@@ -20,6 +21,16 @@ class User_Info(Model,UserMixin):
     calender_name = CharField(128)
     email = CharField(128)
 
+    def get_id(self):
+        return self.user_name
+
+    def get_by_id(self, user_name):
+        try:
+            userinfo = User_Info.get(user_name=user_name)
+            return userinfo
+        except:
+            pass
+        return None
 
     def __str__(self):
         return str(self.to_dict())
