@@ -15,7 +15,7 @@ import SqlTools
 import CalenderTools
 import DateTools
 
-from Entity import Time_Details,Everyday_Cache,Every_week_Cache,Every_month_Cache
+from Entity import *
 # 0. pd 打印调试开关
 import pandas as pd
 pd.set_option('display.max_columns', None)
@@ -24,39 +24,6 @@ pd.set_option('display.max_columns', None)
 network_calender_query_queue = queue.Queue()    # 网络查询日历的任务队列
 cache_calc_queue = queue.Queue()  # 计算缓存任务的队列
 web_cache = {}
-
-class CalenderQueryTask:
-    """
-    日历查询的任务，一个对象是一个任务
-    """
-    def __init__(self, user_info, start_date, end_date):
-        self.user_info = user_info
-        self.start_date = start_date
-        self.end_date = end_date
-
-
-class CacheCalcTask:
-    """
-    计算统计数据缓存的任务
-    """
-    def __init__(self, user_info, freq, start_date_str, end_date_str):
-        """
-
-        :param user_info:
-        :param freq: 统计周期，只能是 [日，周，月，年] 中的一个
-        :param date_str:
-        """
-        self.user_info = user_info
-        self.freq = freq
-        self.start_date_str = start_date_str
-        self.end_date_str = end_date_str
-
-    def get_key(self):
-        key = str(self.user_info.id)+"_"+self.freq+"_"+self.start_date_str
-        return key
-
-    def __str__(self):
-        return self.get_key()
 
 
 class StatisticsCalcService:
@@ -386,6 +353,8 @@ class CachCalcService:
         result["each_category_time_sum"] = []
         result["execise_nums"] = 0
         result["fun_nums"] = 0
+        result["working_tomato_nums"] = 0
+        result["study_tomato_nums"] = 0
         for week_cache in week_cache_list:
             if week_cache.category in ["学习"]:
                 result["study_tomato_nums"] = round(week_cache.during / 30, 2)
@@ -416,7 +385,7 @@ class CachCalcService:
         # 4 .各项每天时间汇总
         result["every_day_category_details"] = self.get_every_day_category_details(day_cache_df,day_padding=7)
 
-        # 6. TODO 漏填、充填时段
+        # 6.  漏填、重复时段
         result["missing_info"] = self.calc_missing_during(day_details_df)
         return result
 
@@ -583,7 +552,7 @@ if __name__ == "__main__":
     start()
 
     # 1.添加一个任务到队列中
-    user_info = SqlTools.fetch_userInfo("cc")
+    user_info = SqlTools.fetch_user_info("cc")
     query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
     add_calender_query_task(query_task)
 

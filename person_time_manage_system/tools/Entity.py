@@ -9,6 +9,43 @@ from nanorm import *
 from flask_login import UserMixin, AnonymousUserMixin
 
 
+# 内存中的 实体结果 ---------------------
+class CalenderQueryTask:
+    """
+    日历查询的任务，一个对象是一个任务
+    """
+    def __init__(self, user_info, start_date, end_date):
+        self.user_info = user_info
+        self.start_date = start_date
+        self.end_date = end_date
+
+
+class CacheCalcTask:
+    """
+    计算统计数据缓存的任务
+    """
+    def __init__(self, user_info, freq, start_date_str, end_date_str):
+        """
+
+        :param user_info:
+        :param freq: 统计周期，只能是 [日，周，月，年] 中的一个
+        :param date_str:
+        """
+        self.user_info = user_info
+        self.freq = freq
+        self.start_date_str = start_date_str
+        self.end_date_str = end_date_str
+
+    def get_key(self):
+        key = str(self.user_info.id)+"_"+self.freq+"_"+self.start_date_str
+        return key
+
+    def __str__(self):
+        return self.get_key()
+
+
+# SQLite 数据库中 实体结构定义---------------------------
+
 class User_Info(Model, UserMixin):
     """
     用户信息表

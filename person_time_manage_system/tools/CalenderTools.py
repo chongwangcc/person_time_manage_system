@@ -162,6 +162,6 @@ class CalenderServer:
 
 
 if __name__ == "__main__":
-    user_info = fetch_userInfo("cc")
+    user_info = fetch_user_info("cc")
     calender_server = CalenderServer()
     calender_server.get_time_details(user_info, start_date="2019-02-11", end_date="2019-02-12")

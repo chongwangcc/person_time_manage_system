@@ -22,7 +22,7 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_name):
-    return SqlTools.fetch_userInfo(user_name)
+    return SqlTools.fetch_user_info(user_name)
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
@@ -384,7 +384,7 @@ def login():
         user_name = request.form["username"]
         password = request.form["password"]
         # 判断用户密码是否正确
-        m_user = SqlTools.fetch_userInfo(user_name)
+        m_user = SqlTools.fetch_user_info(user_name)
         if m_user is not None and m_user.password == password:
             # 登陆成功
             login_user(m_user, remember=True)

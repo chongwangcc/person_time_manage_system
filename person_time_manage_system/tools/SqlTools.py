@@ -14,43 +14,7 @@ g_sqlite3_path = "./data/sqlit3.db"
 set_db_name(g_sqlite3_path)
 
 
-def execute_script(sqlite3_file_path, sql_script_path):
-    """
-    执行sql脚本
-    :return:
-    :param sqlite3_file_path
-    :param sql_script_path
-    """
-    import sqlite3
-    with open(sql_script_path, mode="r", encoding="utf8") as f:
-        create_sql = f.read()
-        conn = sqlite3.connect(sqlite3_file_path)
-        c = conn.cursor()
-        c.executescript(create_sql)
-        conn.commit()
-        conn.close()
-        return True
-    return False
-
-
-def create_table(mode="create"):
-    """
-    按照条件选择是否创建表格
-    :param mode:
-    :return:
-    """
-    global g_sqlite3_path
-    if mode in ["create"]:
-        create_script = r"./data/create_table.sql"
-        execute_script(g_sqlite3_path, create_script)
-    elif mode in ["drop"]:
-        delete_script = r"./data/drop_table.sql"
-        execute_script(g_sqlite3_path, delete_script)
-    else:
-        print("[ERROR] unkown mode "+mode)
-
-
-def fetch_userInfo(user_name):
+def fetch_user_info(user_name):
     """
     获得用户信息类
     :param user_name:
@@ -62,6 +26,35 @@ def fetch_userInfo(user_name):
     except:
         pass
     return None
+
+
+def insert_default_user():
+    """
+    插入默认的用户，只有当表内容为空时，才执行这个
+    :return:
+    """
+    if not User_Info.is_user_exist():
+        print("insert default user cc, mm")
+        global g_sqlite3_path
+        set_db_name(g_sqlite3_path)
+
+        userinfo = User_Info()
+        userinfo.user_name = "cc"
+        userinfo.password = "123456"
+        userinfo.active = 1
+        userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
+        userinfo.calender_server = "google"
+        userinfo.calender_name = "时间日志"
+        userinfo.save()
+
+        userinfo = User_Info()
+        userinfo.user_name="mm"
+        userinfo.password="123456"
+        userinfo.active=1
+        userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
+        userinfo.calender_server = "google"
+        userinfo.calender_name = "时间日志"
+        userinfo.save()
 
 
 def get_time_details_df(user_id, start_date, end_date):
@@ -250,35 +243,6 @@ def save_everymonth_cache(user_id, date_str, cache_list):
     # 2.插入新纪录
     [cache.save() for cache in cache_list]
     return True
-
-
-def insert_default_user():
-    """
-    插入默认的用户，只有当表内容为空时，才执行这个
-    :return:
-    """
-    if not User_Info.is_user_exist():
-        print("insert default user cc, mm")
-        global g_sqlite3_path
-        set_db_name(g_sqlite3_path)
-
-        userinfo = User_Info()
-        userinfo.user_name = "cc"
-        userinfo.password = "123456"
-        userinfo.active = 1
-        userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
-        userinfo.calender_server = "google"
-        userinfo.calender_name = "时间日志"
-        userinfo.save()
-
-        userinfo = User_Info()
-        userinfo.user_name="mm"
-        userinfo.password="123456"
-        userinfo.active=1
-        userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
-        userinfo.calender_server = "google"
-        userinfo.calender_name = "时间日志"
-        userinfo.save()
 
 
 if __name__ == "__main__":
