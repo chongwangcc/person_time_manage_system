@@ -89,7 +89,7 @@ class CalenderServer:
         missing_during = []
         valid_result_list = []
 
-        # 1. 判断日期是不在指定范围内
+        # 1. 判断日期是不是在指定范围内
         for t_time in list_result:
             t_date_str = t_time[3]
             if t_date_str < start_date_str or t_date_str > end_date_str:

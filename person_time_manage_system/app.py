@@ -12,7 +12,10 @@ from flask_login import (current_user, login_required, login_user, logout_user, 
 from tools import TimeSum
 from tools.UserTools import UserInfoManager
 from tools.DateTools import calc_week_begin_end_date
+import BussinessLogic
+import SqlTools
 
+calc_service = BussinessLogic.CachCalcService(BussinessLogic.web_cache)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '123456'
 login_manager = LoginManager()
@@ -25,7 +28,7 @@ def load_user(userid):
     return userinfomanager.get_user_info(userid)
 
 
-@app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
+@app.route("/api/v0/statistics/weekly/all/<date_str>", methods=["GET"])
 @login_required
 def weekly_statistics(date_str):
     """
@@ -67,6 +70,27 @@ def weekly_statistics(date_str):
     # 6. 漏填、充填时段
     result["missing_info"] = missing_info
     return jsonify(result)
+
+
+@app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
+@login_required
+def weekly_statistics1(date_str):
+    """
+    获得每周相关的统计信息、每周概览的统计信息从这个一个API调用
+    :param date_str:
+    :return:
+    """
+
+    # 登陆验证函数
+    user_name = current_user.user_name
+    user_info = SqlTools.fetch_userInfo(user_name)
+    monday, sunday = calc_week_begin_end_date(date_str)
+    task = BussinessLogic.CacheCalcTask(user_info, "week", monday, sunday)
+    calc_service.add_new_cache(task)
+    # 构造返回结果
+    result = BussinessLogic.web_cache.setdefault(task.get_key(),{})
+    return jsonify(result)
+
 
 
 @app.route("/api/v1/statistics/monthly/all/<date_str>", methods=["GET"])
@@ -442,4 +466,5 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
+
     app.run(debug=True, host="0.0.0.0", port=9001)

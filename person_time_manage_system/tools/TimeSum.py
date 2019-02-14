@@ -315,12 +315,6 @@ def get_every_day_category_details(result_list, day_padding=7):
     for t_list in result_list[1:-1]:
         legends.append( t_list[0])
 
-    every_day_sum = [[x for x in legends] for l in xData]
-
-    for i in range(len(xData)):
-        for j in range(len(legends)):
-            every_day_sum[i][j] = round(result_list[1:-1][j][1:-1][i].total_seconds()/3600, 2)
-
     every_day_sum=[]
     for t_list in result_list[1:-1]:
         every_day_sum.append([round(t.total_seconds()/3600,2) for t in t_list[1:-1]])
