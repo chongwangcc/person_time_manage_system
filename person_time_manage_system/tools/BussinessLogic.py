@@ -340,8 +340,8 @@ def calder_query_func():
         for t_yearly in yearly_key:
             t_cachercalc_task = CacheCalcTask(query_task.user_info,
                                               "year",
-                                              t_yearly+"01-01",
-                                              t_yearly+"12-31")
+                                              t_yearly+"-01-01",
+                                              t_yearly+"-12-31")
             add_cache_calc_task(t_cachercalc_task)
 
         # 5. 休眠一下

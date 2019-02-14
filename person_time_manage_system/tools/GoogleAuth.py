@@ -109,22 +109,29 @@ def get_calender_content(credential_service, calender_id, min_time, max_time):
     :param max_time:
     :return:
     """
-    calendar = credential_service.calendars().get(calendarId=calender_id).execute()
-    events_result = credential_service.events().list(calendarId=calender_id,
+    # calendar = credential_service.calendars().get(calendarId=calender_id).execute()
+    calendar_request = credential_service.events().list(calendarId=calender_id,
                                                      timeMin=min_time,
                                                      timeMax=max_time,
                                                      singleEvents=True,
-                                                     orderBy='startTime').execute()
-    list_result=[]
-    events = events_result.get('items', [])
-    if not events:
-        print('No upcoming events found.')
-    for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        end=event['end'].get('dateTime', event['end'].get('date'))
-        title=event['summary']
-        listIndex=[start,end,title]
-        list_result.append(listIndex)
+                                                     orderBy='startTime')
+    events_response = calendar_request.execute()
+    list_result = []
+    while events_response is not None:
+        # 1. 添加日历结果到list列表
+        events = events_response.get('items', [])
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            end = event['end'].get('dateTime', event['end'].get('date'))
+            title = event['summary']
+            listIndex = [start, end, title]
+            list_result.append(listIndex)
+        # 2. 获得下一页内容
+        t_calendar_request = credential_service.events().list_next(calendar_request, events_response)
+        if t_calendar_request is None:
+            break
+        events_response = t_calendar_request.execute()
+    # print("final"+str(len(list_result)))
     return list_result
 
 
