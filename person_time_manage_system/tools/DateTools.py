@@ -36,6 +36,17 @@ def calc_month_begin_end_date(date_str):
     maxDate = date_str[:7]+"-"+str(lastday)
     return minDate, maxDate
 
+def calc_next_date(date_str):
+    """
+    计算明天的日期
+    :param date_str:
+    :return:
+    """
+    m_date = datetime.strptime(date_str, '%Y-%m-%d')
+    tomorrow = m_date + timedelta(days=1)
+    tomorrow_str = tomorrow.strftime('%Y-%m-%d')
+    return tomorrow_str
+
 
 def calc_delta_seconds(date_start, date_end):
     """

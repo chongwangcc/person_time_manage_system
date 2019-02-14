@@ -120,7 +120,6 @@ class CacherCalcService:
             m_ll.append(day_cache)
         return self.dayly_cache_str_map
 
-
     def calc_weekly_cache(self):
         """
         计算某一周的cache
@@ -310,6 +309,7 @@ def calder_query_func():
             m_ll = t_date_str_map.setdefault(t_date_str, [])
             m_ll.append(time_detail_model)
         for key, value in t_date_str_map.items():
+            print(key)
             SqlTools.save_time_details(query_task.user_info.id,
                                        key,
                                        value)
@@ -323,7 +323,7 @@ def calder_query_func():
             t_cachercalc_task = CacheCalcTask(query_task.user_info,
                                               "day",
                                               t_dayly,
-                                              t_dayly)
+                                              DateTools.calc_next_date(t_date_str))
             add_cache_calc_task(t_cachercalc_task)
         for t_weekly in weekly_key:
             t_cachercalc_task = CacheCalcTask(query_task.user_info,
@@ -382,6 +382,7 @@ def start():
         t.start()
     # 3.等待线程结束，阻塞状态
     # t.join()
+
 
 if __name__ == "__main__":
     # 2. 开启线程
