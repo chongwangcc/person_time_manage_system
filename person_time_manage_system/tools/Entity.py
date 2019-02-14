@@ -6,9 +6,9 @@
 # @File : Entity.py 
 # @Software: PyCharm
 from nanorm import *
+from flask_login import UserMixin, AnonymousUserMixin
 
-
-class User_Info(Model):
+class User_Info(Model,UserMixin):
     """
     用户信息表
     """
@@ -18,6 +18,8 @@ class User_Info(Model):
     auth_token_file = CharField(256)
     calender_server = CharField(128)
     calender_name = CharField(128)
+    email = CharField(128)
+
 
     def __str__(self):
         return str(self.to_dict())

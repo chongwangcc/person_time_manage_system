@@ -9,8 +9,6 @@
 from flask import Flask, render_template, jsonify, request, redirect
 from flask_login.login_manager import LoginManager
 from flask_login import (current_user, login_required, login_user, logout_user, confirm_login, fresh_login_required)
-from tools import TimeSum
-from tools.UserTools import UserInfoManager
 from tools.DateTools import calc_week_begin_end_date
 import BussinessLogic
 import SqlTools
@@ -21,55 +19,10 @@ app.config['SECRET_KEY'] = '123456'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-userinfomanager = UserInfoManager("./data")
 
 @login_manager.user_loader
-def load_user(userid):
-    return userinfomanager.get_user_info(userid)
-
-
-@app.route("/api/v0/statistics/weekly/all/<date_str>", methods=["GET"])
-@login_required
-def weekly_statistics(date_str):
-    """
-    获得每周相关的统计信息、每周概览的统计信息从这个一个API调用
-    :param date_str:
-    :return:
-    """
-
-    # 登陆验证函数
-    user_name = current_user.user_name
-    monday, sunday = calc_week_begin_end_date(date_str)
-    result_list, missing_info = TimeSum.get_sum_list(user_name, monday,sunday)
-    # 构造返回结果
-    result = {}
-    # 1.开始结束日期 工作-学习番茄数 锻炼娱乐次数
-    result["working_tomato_nums"] = TimeSum.get_tomato_nums(result_list, label="工作")
-    result["study_tomato_nums"] = TimeSum.get_tomato_nums(result_list, label="学习")
-    result["execise_nums"] = TimeSum.get_nums(result_list, label="运动")
-    result["fun_nums"] = TimeSum.get_nums(result_list, label="娱乐")
-    result["start_date"] = monday
-    result["end_date"] = sunday
-
-    # 2. 番茄时钟达标率
-    result["working_and_study_tomato_nums_of_each_day"]=result["working_tomato_nums"]+result["study_tomato_nums"]
-
-    # 3. 睡眠时间
-    result["sleep_hours"] = {
-        "standard_hours": 7.5,
-        "actual_hours": TimeSum.get_every_day_sum_of_category(result_list, label="睡觉")
-    }
-
-    # 4. 各项每天时间汇总
-    result["every_day_category_details"] = TimeSum.get_every_day_category_details(result_list, day_padding=7)
-    print(result["every_day_category_details"])
-
-    # 5. 类别 时间汇总
-    result["each_category_time_sum"] = TimeSum.get_all_category_time_sum(result_list)
-
-    # 6. 漏填、充填时段
-    result["missing_info"] = missing_info
-    return jsonify(result)
+def load_user(user_name):
+    return SqlTools.fetch_userInfo(user_name)
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
@@ -80,12 +33,9 @@ def weekly_statistics1(date_str):
     :param date_str:
     :return:
     """
-
-    # 登陆验证函数
-    user_name = current_user.user_name
-    user_info = SqlTools.fetch_userInfo(user_name)
+    # 1.构造缓存查询任务
     monday, sunday = calc_week_begin_end_date(date_str)
-    task = BussinessLogic.CacheCalcTask(user_info, "week", monday, sunday)
+    task = BussinessLogic.CacheCalcTask(current_user, "week", monday, sunday)
     calc_service.add_new_cache(task)
     # 构造返回结果
     result = BussinessLogic.web_cache.setdefault(task.get_key(),{})
