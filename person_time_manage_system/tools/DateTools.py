@@ -49,7 +49,7 @@ def calc_month_total_days(date_str):
     return nums
 
 
-def calc_last_mont_begin_end_date(date_str):
+def calc_last_month_begin_end_date(date_str):
     """
     获得上月份的开始结束日期
     :param date_str:

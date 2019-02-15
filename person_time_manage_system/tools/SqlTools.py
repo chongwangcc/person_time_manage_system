@@ -70,7 +70,7 @@ def get_time_details_df(user_id, start_date, end_date):
     sql += " where "
     sql += " user_id == " +str(user_id) +" and "
     sql += " date_str >= '" + start_date + "' "+" and "
-    sql += " date_str < '" + end_date + "' "
+    sql += " date_str <= '" + end_date + "' "
     time_details_df = pd.read_sql_query(sql, conn)
     return time_details_df
 
@@ -141,7 +141,7 @@ def get_everyday_cache_df(user_id, start_date, end_date):
     sql += " where "
     sql += " user_id == " +str(user_id) +" and "
     sql += " date_str >= '" + start_date + "' "+" and "
-    sql += " date_str < '" + end_date + "' "
+    sql += " date_str <= '" + end_date + "' "
     df = pd.read_sql_query(sql, conn)
     return df
 
