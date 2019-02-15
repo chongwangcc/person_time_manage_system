@@ -201,7 +201,6 @@ class Every_month_Cache(Model):
         return __class__.__name__.lower()
 
 
-
 if __name__ == "__main__":
     print(Time_Details.get_table_name())
 

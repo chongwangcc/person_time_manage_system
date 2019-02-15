@@ -38,6 +38,30 @@ def calc_month_begin_end_date(date_str):
     return minDate, maxDate
 
 
+def calc_month_total_days(date_str):
+    """
+    计算所在月份的天数
+    :param date_str:
+    :return:
+    """
+    _,lastDate = calc_month_begin_end_date(date_str)
+    nums = int(lastDate[-2:])
+    return nums
+
+
+def calc_last_mont_begin_end_date(date_str):
+    """
+    获得上月份的开始结束日期
+    :param date_str:
+    :return:
+    """
+    m_date = datetime.strptime(date_str, '%Y-%m-%d')
+    first = m_date.replace(day=1)
+    lastMonth = first - datetime.timedelta(days=1)
+    last_month_str = lastMonth.strptime(date_str, '%Y-%m-%d')
+    return calc_month_begin_end_date(last_month_str)
+
+
 def calc_year_begin_end_date(date_str):
     minxDate = date_str[:4]+"-01-01"
     maxDate = date_str[:4]+"-12-31"

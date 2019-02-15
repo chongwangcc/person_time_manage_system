@@ -8,7 +8,7 @@
 # 业务逻辑代码
 import queue
 import threading
-from datetime import datetime
+from datetime import datetime,date
 
 import SqlTools
 import CalenderTools
@@ -439,6 +439,205 @@ class CachCalcService:
 
         return result
 
+    def get_every_month_category_during(self, month_df, category, month_str):
+        """
+        获得 每月缓存中，某类型的 持续时间,单位分钟
+        :param month_df:
+        :param category:
+        :return:
+        """
+        during = 0
+        if month_df is None or category is None:
+            return during
+        t_df = month_df[month_df["month_str"] == month_str & month_df["category"] == category]
+        if len(t_df) == 1:
+            during = t_df["during"]
+        return during
+
+    def get_every_month_category_nums(self, month_df, category, month_str):
+        """
+        获得 每月缓存中，某类型的 持续时间,单位分钟
+        :param month_df:
+        :param category:
+        :return:
+        """
+        during = 0
+        if month_df is None or category is None:
+            return during
+        t_df = month_df[month_df["month_str"] == month_str & month_df["category"] == category]
+        if len(t_df) == 1:
+            during = t_df["nums"]
+        return during
+
+    def get_month_during_percent(self, start_date_str):
+        """
+        计算每月过了多久了
+        :param start_date_str:
+        :return:
+        """
+        during_percent = 0
+        today_str = date.today().strftime('%Y-%m-%d')
+        if today_str[:7] == start_date_str[:7]:
+            minDate, maxDate = DateTools.calc_month_begin_end_date(start_date_str)
+            now_int = int(today_str[-2:])
+            all_int = int(maxDate[-2:])
+            during_percent = round(now_int/all_int, 2)
+        elif today_str[:7] < start_date_str[:7]:
+            during_percent = 0
+        else:
+            during_percent = 1
+        return during_percent
+
+    def get_month_living_percent(self, month_cache_df):
+        """
+        计算活着时间的总数：活着时间定义---除去睡觉和杂的时间
+        :param month_cache_df:
+        :return:
+        """
+        total_minuts = month_cache_df["during"].sum()
+        living_df = month_cache_df[month_cache_df["category"] != "睡觉" & month_cache_df["category"] != "杂"]
+        living_minuts = living_df["during"].sum()
+
+        return round(living_minuts/total_minuts, 2)
+
+    def get_month_word_cloud(self, month_cache_df):
+        """
+        计算 词云图频率
+        :param month_cache_df:
+        :return:
+        """
+        # 1.所有描述合并到一个字符串上
+        description = ""
+        words_series = month_cache_df["word_cloud"]
+        for index, value in words_series.iteritems():
+            description += (","+value["word_cloud"])
+
+        # 2. 拆分字符串
+        import re
+        ss = re.split(u",| |;|，|；|:|：|～", description)
+
+        # 3. 统计词频
+        freq_dict = {}
+        for s in ss:
+            if len(s) <= 1:
+                continue
+            freq = freq_dict.setdefault(s,0)
+            freq += 1
+            freq_dict[s] = freq
+
+        #4. 生成需要的格式
+        words = []
+        for key,value in freq_dict.items():
+            t_dict = {"name": key, "value": value}
+            words.append(t_dict)
+
+        return words
+
+    def get_month_ablity_randar(self, month_df, month_str):
+        """
+        计算每月的各项内容雷达值,0--10之间的一个数值
+        :param month_df:
+        :return:
+        """
+        result = [0, 0, 0, 0, 0, 0]  # ？？？、睡眠力、工作力、娱乐力、运动力、学习力
+        month_pass = self.get_month_during_percent(month_str + "-01")
+        month_total_days = DateTools.calc_month_total_days(month_str+"-01")
+        # 1.工作力 得分计算规则
+        work_minutes = self.get_every_month_category_during(month_df, "工作", month_str)
+        stand_work_hours = 40*5/7*month_pass*month_total_days
+        work_score = round(work_minutes/60/stand_work_hours*10, 0)
+        if work_score > 10:
+            work_score = 10
+
+        # 2. 学习力 得分计算规则
+        study_minutes = self.get_every_month_category_during(month_df, "学习", month_str)
+        stand_study_hours = (3+8/7)*month_total_days*month_pass
+        study_score = round(study_minutes/60/stand_study_hours*10, 0)
+        if study_score > 10:
+            study_score = 10
+
+        # 3. 娱乐力 得分计算规则
+        fun_num = self.get_every_month_category_nums(month_df, "娱乐", month_str)
+        stand_fun_nums = int(8/7*month_pass*month_total_days)
+        fun_score = round(fun_num/stand_fun_nums, 0)
+        if fun_score > 10 :
+            fun_score = 10
+
+        # 4. 运动力 得分计算规则
+        workoutnum = self.get_every_month_category_nums(month_df, "运动", month_str)
+        stand_workout_nums = int(5/7*month_total_days*month_pass)
+        workout_score = round(workoutnum/stand_workout_nums, 0)
+        if workout_score > 10:
+            workout_score = 10
+
+        # 5. 睡眠力 得分计算规则
+        sleep_minutes = self.get_every_month_category_during(month_df, "睡觉", month_str)
+        stand_sleep_hours = 8*month_pass*month_total_days
+        sleep_score = abs(round((sleep_minutes/60-8)/(month_total_days*24), 2))
+        if sleep_score > 10:
+            sleep_score = 10
+
+        result = [0, sleep_score, work_score, fun_score,sleep_score, workout_score, study_score]
+        return result
+
+    def get_month_ring_map(self, this_month_df,
+                           last_month_df,
+                           this_month_str,
+                           last_month_str,
+                           categolry=["工作", "学习", "运动"]):
+        """
+        计算month 各类别的环比图
+        :param this_month_df:
+        :param last_month_df:
+        :param categolry:
+        :return:
+        """
+        month_pass = self.get_month_during_percent(this_month_str + "-01")
+        result = {}
+        result["last_month"] = []
+        result["this_month"] = []
+        result["growth"] = []
+        result["type"] = []
+
+        for cat_t in categolry:
+            last_month_hours = self.get_every_month_category_nums(last_month_df, cat_t,last_month_str)
+            last_month_hours = round(last_month_hours/60, 2)
+            last_month_hours = last_month_hours*month_pass
+
+            this_month_hours = self.get_every_month_category_nums(this_month_df, cat_t, this_month_str)
+            this_month_hours = round(this_month_hours/60, 2)
+
+            result["last_month"].append(last_month_hours)
+            result["this_month"].append(this_month_hours)
+            result["type"].append(cat_t)
+            t_grouth = 0
+            if result["last_month"] !=0:
+                t_grouth = (result["this_month"]-result["last_month"])/result["last_month"]
+            result["growth"].append(t_grouth)
+
+        return result
+
+
+    def get_month_living_trend(self, day_cache_df):
+        """
+        获得时间的走势图，按照日期排序
+        :param day_cache_df:
+        :return:
+        """
+        living_df = day_cache_df[day_cache_df["category"] != "睡觉" & day_cache_df["category"] != "杂"]
+        living_df.groupby(by=["date_str"]).sum()
+        living_df = living_df[["date_str", "during"]].sort_values(by='date_str')
+        int_day = 0
+        result = []
+        for index, row in living_df.iterrows():
+            t_int_day = int(row["date_str"][-2:])
+            if t_int_day == (int_day+1):
+                result.append(round(row["during"]/60, 2))
+            elif t_int_day > (int_day+1):
+                result.extend([0 for i in range(t_int_day-int_day-1)])
+        return result
+
+
     def calc_weekly_cache(self, cache_task):
         """
         计算每周的统计数据
@@ -508,105 +707,62 @@ class CachCalcService:
         :param cache_task:
         :return:
         """
+        # 1. 读数据库 获得每月的统计数据
+        last_month_start, last_month_end = DateTools.calc_last_mont_begin_end_date()
+
+        month_cache_df = SqlTools.get_everymonth_cache_df(cache_task.user_info.id,
+                                                      cache_task.start_date_str,
+                                                      cache_task.end_date_str)
+        last_month_cache_df = SqlTools.get_everymonth_cache_df(cache_task.user_info.id,
+                                                               last_month_start,
+                                                               last_month_end)
+
+        day_cache_df = SqlTools.get_everyday_cache_df(cache_task.user_info.id,
+                                                      cache_task.start_date_str,
+                                                      cache_task.end_date_str)
+        last_day_cache_df = SqlTools.get_everyday_cache_df(cache_task.user_info.id,
+                                                               last_month_start,
+                                                               last_month_end)
+
+        month_str = cache_task.start_date_str[:7]
+        last_month_str = last_month_start[:7]
+        print(month_cache_df)
         # 构造结果
         result = {}
-        result["start_date"] = "2018-01-01"
-        result["end_date"] = "2018-01-29"
-        result["during_percent"] = "93%"
-        result["living_percent"] = "30%"
-        result["working_tomato_nums"] = "40"
-        result["study_tomato_nums"] = "60"
+        result["start_date"] = cache_task.start_date_str
+        result["end_date"] = cache_task.end_date_str
+        result["working_tomato_nums"] = round(self.get_every_month_category_during(month_cache_df,
+                                                                             "工作",
+                                                                             month_str)/60, 2)
+        result["study_tomato_nums"] = round(self.get_every_month_category_during(month_cache_df,
+                                                                             "学习",
+                                                                             month_str)/60, 2)
+        result["during_percent"] = "%.2f%%" % self.get_month_during_percent(cache_task.start_date_str)
+        result["living_percent"] = "%.2f%%" % self.get_month_living_percent(month_cache_df)
 
         # 1. 本月主题词云
-        result["word_cloud"] = [
-            {
-                "name": 'Sam S Club',
-                "value": 10000,
-            }, {
-                "name": 'Macys',
-                "value": 6181
-            }, {
-                "name": 'Amy Schumer',
-                "value": 4386
-            }, {
-                "name": 'Jurassic World',
-                "value": 4055
-            }, {
-                "name": 'Charter Communications',
-                "value": 2467
-            }, {
-                "name": 'Chick Fil A',
-                "value": 2244
-            }, {
-                "name": 'Planet Fitness',
-                "value": 1898
-            }, {
-                "name": 'Pitch Perfect',
-                "value": 1484
-            }, {
-                "name": 'Express',
-                "value": 1112
-            }, {
-                "name": 'Home',
-                "value": 965
-            }, {
-                "name": 'Johnny Depp',
-                "value": 847
-            }, {
-                "name": 'Lena Dunham',
-                "value": 582
-            }, {
-                "name": 'Lewis Hamilton',
-                "value": 555
-            }, {
-                "name": 'KXAN',
-                "value": 550
-            }, {
-                "name": 'Mary Ellen Mark',
-                "value": 462
-            }, {
-                "name": 'Farrah Abraham',
-                "value": 366
-            }, {
-                "name": 'Rita Ora',
-                "value": 360
-            }, {
-                "name": 'Serena Williams',
-                "value": 282
-            }, {
-                "name": 'NCAA baseball tournament',
-                "value": 273
-            }, {
-                "name": 'Point',
-                "value": 273
-            }, {
-                "name": 'Point Break',
-                "value": 265
-            }]
-
+        result["word_cloud"] = self.get_month_word_cloud(month_cache_df)
         # 2. 各项能力雷达图
         result["ability_redar"] = [
             {
-                "value": [5, 7, 1.2, 1.1, 1.5, 1.4],
+                "value": self.get_month_ablity_randar(last_month_cache_df, last_month_str),
                 "name": '上月',
             }, {
-                "value": [2.5, 1.2, 8, 8.5, 1.2, 1.2],
+                "value": self.get_month_ablity_randar(month_cache_df, month_str),
                 "name": '本月',
             }
         ]
 
         # 3, 各类环比图
-        result["compare"] = {
-            "last_month": [209, 236, 325],
-            "this_month": [209, 236, 325],
-            "growth": [1, 13, 5],
-            "type": ['工作时长', "学习时长", "运动"]
-        }
+        result["compare"] = self.get_month_ring_map(month_cache_df,
+                                                    last_month_start,
+                                                    month_str,
+                                                    last_month_str)
 
         # 4. 活着时间
         result["living_time"] = {
-            "last_month_data": [120, 132, 101, 134, 90, 230, 210],
-            "this_month_data": [220, 182, 191, 234, 290, 330, 310]
+            "last_month_data":self.get_month_living_trend(last_day_cache_df),
+            "this_month_data": self.get_month_living_trend(day_cache_df)
         }
 
         # 5. 类别分布矩形图
@@ -666,9 +822,9 @@ class CachCalcService:
                         [1897, 45.66140699, 1847468, "整理", 8]]]
         }
 
-        # 7. 工作时段转换率
+        # 7. 工作时段利用率
         result["working_hours_transform_rate"] = {
-            "legend": ['展现', '点击', '访问', '咨询', '订单'],
+            "legend": ['全部', '-睡觉', '-杂', '工作+学习', '工作'],
             "value": [
                 {"value": 20, "name": '访问'},
                 {"value": 10, "name": '咨询'},
@@ -680,7 +836,7 @@ class CachCalcService:
 
         # 8. 学习时段转换率
         result["learning_hours_transform_rate"] = {
-            "legend": ['展现', '点击', '访问', '咨询', '订单'],
+            "legend": ['全部', '-睡觉', '-杂', '工作+学习', '工作'],
             "value": [
                 {"value": 20, "name": '访问'},
                 {"value": 10, "name": '咨询'},
@@ -882,12 +1038,12 @@ def start():
 
 
 if __name__ == "__main__":
-    # # 2. 开启线程
+    #  2. 开启线程
     start()
 
     # 1.添加一个任务到队列中
     user_info = SqlTools.fetch_user_info("cc")
-    query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
+    query_task = CalenderQueryTask(user_info, "2018-01-01", "2019-02-28")
     QuerayCalenderService.add_calender_query_task(query_task)
 
     aa = input()

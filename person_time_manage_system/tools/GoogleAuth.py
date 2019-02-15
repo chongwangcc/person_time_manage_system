@@ -123,7 +123,7 @@ def get_calender_content(credential_service, calender_id, min_time, max_time):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
             end = event['end'].get('dateTime', event['end'].get('date'))
-            title = event['summary']
+            title = event.setdefault('summary',"")
             listIndex = [start, end, title]
             list_result.append(listIndex)
         # 2. 获得下一页内容

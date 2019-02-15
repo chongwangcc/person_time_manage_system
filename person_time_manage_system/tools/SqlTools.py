@@ -222,6 +222,25 @@ def get_everymonth_cache(user_id, start_date, end_date):
     return everymonth_cache
 
 
+def get_everymonth_cache_df(user_id, start_date, end_date):
+    """
+    获得每天缓存的统计数据
+    :param user_id:
+    :param start_date:
+    :param end_date:
+    :return:Dataframe
+    """
+    start_date_month = start_date[:7]
+    end_date_month = end_date[:7]
+    conn = sqlite3.connect(g_sqlite3_path)
+    sql = "select * from "+Every_month_Cache.get_table_name()
+    sql += " where "
+    sql += " user_id == " + str(user_id) + " and "
+    sql += " month_str >= '" + start_date_month + "' "+" and "
+    sql += " month_str <= '" + end_date_month + "' "
+    df = pd.read_sql_query(sql, conn)
+    return df
+
 def save_everymonth_cache(user_id, date_str, cache_list):
     """
     保存每周的缓存，先删除记录，后插入记录
