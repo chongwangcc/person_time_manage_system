@@ -8,11 +8,8 @@
 # 业务逻辑代码
 import queue
 import threading
-from datetime import datetime,date
 
-import SqlTools
 import CalenderTools
-import DateTools
 from Entity import *
 from CacheCalcTools import *
 
@@ -84,32 +81,11 @@ class QuerayCalenderService:
             # 4. 创建 cache计算任务,加入cache计算队列
             # 计算 又影响的 dayly, weekly,monthly, yearly 缓存数据
             dayly_key = list(t_date_str_map.keys())
-            weekly_key = DateTools.gen_week_list_in_days(dayly_key)
-            month_key = DateTools.gen_month_list_in_days(dayly_key)
-            yearly_key = DateTools.gen_year_list_in_days(dayly_key)
             for t_dayly in dayly_key:
                 t_cachercalc_task = CacheCalcTask(query_task.user_info,
                                                   "day",
                                                   t_dayly,
                                                   DateTools.calc_next_date(t_date_str))
-                StatisticsCalcService.add_cache_calc_task(t_cachercalc_task)
-            for t_weekly in weekly_key:
-                t_cachercalc_task = CacheCalcTask(query_task.user_info,
-                                                  "week",
-                                                  t_weekly[0],
-                                                  t_weekly[1])
-                StatisticsCalcService.add_cache_calc_task(t_cachercalc_task)
-            for t_monthly in month_key:
-                t_cachercalc_task = CacheCalcTask(query_task.user_info,
-                                                  "month",
-                                                  t_monthly + "-01",
-                                                  t_monthly + "-31")
-                StatisticsCalcService.add_cache_calc_task(t_cachercalc_task)
-            for t_yearly in yearly_key:
-                t_cachercalc_task = CacheCalcTask(query_task.user_info,
-                                                  "year",
-                                                  t_yearly + "-01-01",
-                                                  t_yearly + "-12-31")
                 StatisticsCalcService.add_cache_calc_task(t_cachercalc_task)
 
             # 5. 休眠一下
@@ -203,96 +179,6 @@ class StatisticsCalcService:
             m_ll.append(day_cache)
         return self.dayly_cache_str_map
 
-    def calc_weekly_statistics(self):
-        """
-        计算某一周的cache
-        前提条件：每天的缓存数据已经入库了，并且是最新的
-        :return: 返回json串
-        """
-        # 1. 判断要不要从数据库中读数据
-        if self.dayly_cache_df is None:
-            dayly_cache_df = SqlTools.get_everyday_cache_df(self.cache_task.user_info.id,
-                                                      self.cache_task.start_date_str,
-                                                      self.cache_task.end_date_str)
-            self.dayly_cache_df = dayly_cache_df
-        if len(self.dayly_cache_df) == 0:
-            return None
-
-        # 2. 计算每周的缓存
-        self.dayly_cache_df["start_date_str"] = self.dayly_cache_df["date_str"]\
-                                                        .map(lambda x: DateTools.calc_week_begin_end_date(x)[0])
-        self.dayly_cache_df["end_date_str"] = self.dayly_cache_df["date_str"]\
-                                                        .map(lambda x: DateTools.calc_week_begin_end_date(x)[1])
-        group_week = self.dayly_cache_df.groupby(by=["user_id", "start_date_str", "end_date_str", "category"])
-        during_sum_df = group_week.sum().reset_index()
-        description_df = group_week["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
-        df_final = during_sum_df
-        df_final["word_cloud"] = description_df["word_cloud"]
-        self.weekly_cache_df = df_final
-
-        # 2. 保存缓存到数据库中
-        self.weekly_cache_str_map = {}
-        for index, row in df_final.iterrows():
-            week_cache = Every_week_Cache()
-            week_cache.user_id = row["user_id"]
-            week_cache.start_date_str = row["start_date_str"]
-            week_cache.end_date_str = row["end_date_str"]
-            week_cache.category = row["category"]
-            week_cache.during = row["during"]
-            week_cache.nums = row["nums"]
-            week_cache.word_cloud = row["word_cloud"]
-            m_ll = self.weekly_cache_str_map.setdefault(row["start_date_str"], [])
-            m_ll.append(week_cache)
-        return self.weekly_cache_str_map
-
-
-        print(self.weekly_cache_df)
-        return []
-
-    def calc_monthly_statistics(self):
-        """
-        TODO 计算某一月的cache
-        前提条件：每天的缓存数据已经入库了，并且是最新的
-        :return: 返回json串
-        """
-        # 1. 判断要不要从数据库中读数据
-        if self.dayly_cache_df is None:
-            dayly_cache_df = SqlTools.get_everyday_cache_df(self.cache_task.user_info.id,
-                                                            self.cache_task.start_date_str,
-                                                            self.cache_task.end_date_str)
-            self.dayly_cache_df = dayly_cache_df
-        if len(self.dayly_cache_df) == 0:
-            return None
-
-        # 2. 计算每月的缓存
-        self.dayly_cache_df["month_str"] = self.dayly_cache_df["date_str"].map(lambda x: x[:7])
-        group_month = self.dayly_cache_df.groupby(by=["user_id", "month_str", "category"])
-        during_sum_df = group_month.sum().reset_index()
-        description_df = group_month["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
-        df_final = during_sum_df
-        df_final["word_cloud"] = description_df["word_cloud"]
-        self.monthly_cache_df = df_final
-
-        # 2. 保存缓存到数据库中
-        self.monthly_cache_str_map = {}
-        for index, row in df_final.iterrows():
-            month_cache = Every_month_Cache()
-            month_cache.user_id = row["user_id"]
-            month_cache.month_str = row["month_str"]
-            month_cache.category = row["category"]
-            month_cache.during = row["during"]
-            month_cache.nums = row["nums"]
-            month_cache.word_cloud = row["word_cloud"]
-            m_ll = self.monthly_cache_str_map.setdefault(row["month_str"], [])
-            m_ll.append(month_cache)
-        return self.monthly_cache_str_map
-
-    def calc_yearly_statistics(self):
-        """
-        TODO 计算某一年的cache
-        :return:
-        """
-        return []
 
     def calc(self):
         """

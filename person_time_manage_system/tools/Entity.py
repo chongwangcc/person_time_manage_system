@@ -131,57 +131,11 @@ class Everyday_Cache(Model):
     """
     user_id = ForeignKey(User_Info)
     date_str = CharField(10)
-    category = CharField(16)
-    during = IntegerField()
-    nums = IntegerField()
-    word_cloud = CharField()
-
-    def __str__(self):
-        return str(self.to_dict())
-
-    def to_dict(self):
-        dict_my = {}
-        for key, value in zip(self.field_names,self.field_values):
-            dict_my[key.replace("`", "")] = value.replace("'", "")
-        return dict_my
-
-    @staticmethod
-    def get_table_name():
-        return __class__.__name__.lower()
-
-
-class Every_week_Cache(Model):
-    """
-    每周缓存表
-    """
-    user_id = ForeignKey(User_Info)
-    start_date_str = CharField(10)
-    end_date_str = CharField(10)
-    category = CharField(10)
-    during = IntegerField()
-    nums = IntegerField()
-    word_cloud = CharField()
-
-    def __str__(self):
-        return str(self.to_dict())
-
-    def to_dict(self):
-        dict_my = {}
-        for key, value in zip(self.field_names,self.field_values):
-            dict_my[key.replace("`", "")] = value.replace("'", "")
-        return dict_my
-
-    @staticmethod
-    def get_table_name():
-        return __class__.__name__.lower()
-
-
-class Every_month_Cache(Model):
-    """
-    每月缓存表
-    """
-    user_id = ForeignKey(User_Info)
+    week_start_str = CharField(10)
+    week_end_str = CharField(10)
+    year_str = CharField(4)
     month_str = CharField(7)
+    second_category = CharField(16)
     category = CharField(16)
     during = IntegerField()
     nums = IntegerField()
