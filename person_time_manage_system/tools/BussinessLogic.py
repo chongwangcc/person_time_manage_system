@@ -40,7 +40,7 @@ class QuerayCalenderService:
         return True
 
     @staticmethod
-    def calder_query_func():
+    def calender_query_func():
         """
         查询日历查询队列，网络读取数据
         :return:
@@ -51,45 +51,34 @@ class QuerayCalenderService:
             if query_task is None:
                 time.sleep(1)
                 continue
+            print("[INFO] start handling query_task [" + str(query_task) + "]")
             # 2. 调用网络层，获得数据
             calender_server = CalenderTools.CalenderServer()
             final_result, missing_during = calender_server.get_time_details(query_task.user_info,
                                                                             start_date=query_task.start_date,
                                                                             end_date=query_task.end_date)
-            # print(final_result)
-            # print(missing_during)
-            # 3. 保存到 数据库中
-            t_date_str_map = {}
-            for res in final_result:
-                t_date_str = res[3]
-                time_detail_model = Time_Details()
-                time_detail_model.user_id = res[0]
-                time_detail_model.category = res[1]
-                time_detail_model.description = res[2]
-                time_detail_model.date_str = res[3]
-                time_detail_model.week_nums = res[4]
-                time_detail_model.start_time = res[5]
-                time_detail_model.end_time = res[6]
-                time_detail_model.during = res[7]
-                m_ll = t_date_str_map.setdefault(t_date_str, [])
-                m_ll.append(time_detail_model)
-            for key, value in t_date_str_map.items():
-                print(key)
-                SqlTools.save_time_details(query_task.user_info.id,
-                                           key,
-                                           value)
-            # 4. 创建 cache计算任务,加入cache计算队列
-            # 计算 又影响的 dayly, weekly,monthly, yearly 缓存数据
-            dayly_key = list(t_date_str_map.keys())
-            for t_dayly in dayly_key:
-                t_cachercalc_task = CacheCalcTask(query_task.user_info,
-                                                  "day",
-                                                  t_dayly,
-                                                  DateTools.calc_next_date(t_date_str))
-                StatisticsCalcService.add_cache_calc_task(t_cachercalc_task)
 
-            # 5. 休眠一下
-            time.sleep(1)
+            # 4. 转换为 Dataframe 方便后续处理
+            columns = ["user_id", "category", "description", "date_str", "week_nums",
+                       "start_time", "end_time", "during", "second_category", "md5"]
+            time_detail_df = pd.DataFrame(final_result, columns=columns)
+            time_detail_df["only_key"] = time_detail_df["user_id"].map(str) \
+                                             + time_detail_df["date_str"].map(str) \
+                                             + time_detail_df["start_time"].map(str) \
+                                             + time_detail_df["end_time"].map(str)
+            time_detail_df = time_detail_df.drop_duplicates(keep="first")
+            # 3. 保存到 数据库中
+            is_update, update_date_list = SqlTools.update_time_detials_df(query_task.user_info.id,
+                                          query_task.start_date,
+                                          query_task.end_date,
+                                          time_detail_df)
+            # 4. 如果更新了，重新计算每日缓存
+            if is_update:
+                print(update_date_list)
+                t_task = CacheCalcTask(query_task.user_info, "day", query_task.start_date, query_task.end_date)
+                StatisticsCalcService.add_cache_calc_task(t_task)
+
+            print("[INFO] end handling query_task [" + str(query_task) + "]")
 
 
 class StatisticsCalcService:
@@ -103,13 +92,6 @@ class StatisticsCalcService:
         :param cache_task:  CacheCalcTask对象
         """
         self.cache_task = cache_task
-        self.details_df = None
-        self.dayly_cache_str_map = None
-        self.dayly_cache_df = None
-        self.weekly_cache_df = None
-        self.weekly_cache_str_map = None
-        self.monthly_cache_str_map = None
-        self.monthly_cache_df = None
 
     @staticmethod
     def add_cache_calc_task(calc_task):
@@ -132,14 +114,20 @@ class StatisticsCalcService:
         while True:
             # 1. 阻塞获取  cache计算任务
             cache_task = cache_calc_queue.get(block=True)  # CacheCalcTask 对象
-            print(cache_task)
-
+            print("[INFO] start handling cache_task [" + str(cache_task) + "]")
             # 2. 计算缓存
             cache_service = StatisticsCalcService(cache_task)
-            json_result = cache_service.calc()
-            cache_service.save()  # 保存到mysql数据库中
+            json_result = cache_service.calc_daily_statistics()
 
             # 3. TODO 将JSON添加到缓存内存中
+            print("[INFO] end handling cache_task [" + str(cache_task) + "]")
+
+    @staticmethod
+    def md5_my(row):
+        import hashlib
+        t_md5 = hashlib.md5()
+        [t_md5.update(str(t).encode("utf8")) for t in row.tolist()]
+        return t_md5.hexdigest()
 
     def calc_daily_statistics(self):
         """
@@ -148,14 +136,12 @@ class StatisticsCalcService:
         :return:
         """
 
-        if self.details_df is None:
-            details_df = SqlTools.get_time_details_df(self.cache_task.user_info.id,
-                                      self.cache_task.start_date_str,
-                                      self.cache_task.end_date_str)
-            self.details_df = details_df
+        details_df = SqlTools.get_time_details_df(self.cache_task.user_info.id,
+                                  self.cache_task.start_date_str,
+                                  self.cache_task.end_date_str)
 
         # 1. 分组统计结果
-        group_day = self.details_df.groupby(by=["date_str", "category"])
+        group_day = details_df.groupby(by=["date_str", "category"])
         during_sum_df = group_day["during"].sum().reset_index()
         description_df = group_day["description"].aggregate(lambda x: ",".join(x)).reset_index()
         count_df = group_day["during"].count().reset_index()
@@ -163,86 +149,62 @@ class StatisticsCalcService:
         df_final["word_cloud"] = description_df["description"]
         df_final["nums"] = count_df["during"]
         df_final["user_id"] = self.cache_task.user_info.id
+        df_final["year_str"] = df_final["date_str"].map(lambda  x : str(x)[:4])
+        df_final["month_str"] = df_final["date_str"].map(lambda x: str(x)[:7])
+        df_final["week_start_str"] = df_final["date_str"].map(lambda x: DateTools.calc_week_begin_end_date(x)[0])
+        df_final["week_end_str"] = df_final["date_str"].map(lambda x: DateTools.calc_week_begin_end_date(x)[1])
+        df_final["only_key"] = df_final["user_id"].map(str)\
+                                   + df_final["date_str"].map(str) \
+                                   + df_final["category"].map(str)
+
+        df_final["md5"] = df_final.apply(StatisticsCalcService.md5_my, axis=1)
         self.dayly_cache_df = df_final
 
+
         # 2. 保存缓存到数据库中
-        self.dayly_cache_str_map = {}
-        for index, row in df_final.iterrows():
-            day_cache = Everyday_Cache()
-            day_cache.user_id = row["user_id"]
-            day_cache.date_str = row["date_str"]
-            day_cache.category = row["category"]
-            day_cache.during = row["during"]
-            day_cache.nums = row["nums"]
-            day_cache.word_cloud = row["word_cloud"]
-            m_ll = self.dayly_cache_str_map.setdefault(row["date_str"], [])
-            m_ll.append(day_cache)
-        return self.dayly_cache_str_map
+        is_update, update_date_list = SqlTools.update_everyday_cache_df(self.cache_task.user_info.id,
+                                          self.cache_task.start_date_str,
+                                          self.cache_task.end_date_str,
+                                          df_final)
 
-
-    def calc(self):
-        """
-        计算，返回值
-        :return:
-        """
-        result = None
-        if self.cache_task.freq in ["day"]:
-            result = self.calc_daily_statistics()
-        elif self.cache_task.freq in ["week"]:
-            result = self.calc_weekly_statistics()
-        elif self.cache_task.freq in ["month"]:
-            result = self.calc_monthly_statistics()
-        elif self.cache_task.freq in ["year"]:
-            result = self.calc_yearly_statistics()
-        return result
-
-    def save(self):
-        """
-        TODO 将缓存结果保存到 数据库中
-        :return:
-        """
-        if self.dayly_cache_str_map is not None:
-            for key, value in self.dayly_cache_str_map.items():
-                SqlTools.save_everyday_cache(self.cache_task.user_info.id,
-                                             key,
-                                             value)
-        if self.weekly_cache_str_map is not None:
-            for key, value in self.weekly_cache_str_map.items():
-                SqlTools.save_everyweek_cache(self.cache_task.user_info.id,
-                                             key,
-                                             value)
-
-        if self.monthly_cache_str_map is not None:
-            for key, value in self.monthly_cache_str_map.items():
-                SqlTools.save_everymonth_cache(self.cache_task.user_info.id,
-                                             key,
-                                             value)
+        # 3.判断要不要重新计算web需要的json数据
+        if is_update:
+            CachCalcService.scan_and_update(self.cache_task.user_info.id, update_date_list)
+        return
 
 
 class CachCalcService:
     """
     计算 缓存数据 对象
     """
-    def __init__(self, web_cache):
-        """
-        缓存对象所在列
-        :param web_cache:
-        """
-        self.web_cache = web_cache
-
-    def scan_and_update(self):
+    @staticmethod
+    def scan_and_update(user_id, update_date_list):
         """
         TODO 扫描计算缓存key, 计算json数据
         :return:
         """
-        for key, value in self.web_cache.items():
+        for key, value in web_cache.items():
             # 1. 判断数据有没有更新
+            user_name, freq, start_date_str, end_date_str = key.split("_")
+            if freq in ["day"]:
+                pass
+            elif freq in ["week"]:
+                start_time_list = [DateTools.calc_week_begin_end_date(t_data)[0] for t_data in update_date_list]
+                if start_date_str in start_time_list:
+                    user_info = SqlTools.fetch_user_info(user_name)
+                    calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
+                    CachCalcService.add_new_cache_calc_task(calc_task)
+            elif freq in ["month"]:
+                pass
+            elif freq in ["year"]:
+                pass
 
             # 2. 对于更新后的数据，重新计算缓存
 
             pass
 
-    def calc_weekly_cache(self, cache_task):
+    @staticmethod
+    def calc_weekly_cache(cache_task):
         """
         计算每周的统计数据
         :param cache_task:
@@ -254,7 +216,8 @@ class CachCalcService:
         result = week_service.get_cache_result()
         return result
 
-    def calc_monthly_cache(self, cache_task):
+    @staticmethod
+    def calc_monthly_cache(cache_task):
         """
 
         :param cache_task:
@@ -273,7 +236,8 @@ class CachCalcService:
         result["last_month"] = last_month_service.get_cache_result()
         return result
 
-    def calc_yearly_cache(self, cache_task):
+    @staticmethod
+    def calc_yearly_cache(cache_task):
         """
 
         :param cache_task:
@@ -399,7 +363,8 @@ class CachCalcService:
         }
         return result
 
-    def add_new_cache_calc_task(self, cache_task):
+    @staticmethod
+    def add_new_cache_calc_task(cache_task):
         """
         添加一条新的 统计缓存任务到队列中
         :param cache_task:
@@ -412,18 +377,19 @@ class CachCalcService:
             # 不计算每天的 统计数据 json
             return False
         elif cache_task.freq in ["week"]:
-            result = self.calc_weekly_cache(cache_task)
+            result = CachCalcService.calc_weekly_cache(cache_task)
         elif cache_task.freq in ["month"]:
-            result = self.calc_monthly_cache(cache_task)
+            result = CachCalcService.calc_monthly_cache(cache_task)
         elif cache_task.freq in ["year"]:
-            result = self.calc_yearly_cache(cache_task)
+            result = CachCalcService.calc_yearly_cache(cache_task)
 
         # 3.保存到缓存对象中
         if result is not None and len(result)>0:
-            self.web_cache[cache_task.get_key()] = result
+            web_cache[cache_task.get_key()] = result
         return result
 
-    def fetch_cache(self, cache_task):
+    @staticmethod
+    def fetch_cache(cache_task):
         """
         查缓存获得任务，同时新建任务查询
         :param cache_task:
@@ -432,11 +398,18 @@ class CachCalcService:
         # 0. 检查参数
         if cache_task is None:
             return {}
-        # 1. 查询缓存队列中是否有结果
+        # 1. 新建一条查询任务
+        query_task = CalenderQueryTask(cache_task.user_info,
+                                       cache_task.start_date_str,
+                                       cache_task.end_date_str)
+        QuerayCalenderService.add_calender_query_task(query_task)
+        # 2. 查询缓存队列中是否有结果
         cache_result = web_cache.setdefault(cache_task.get_key(), None)
         if cache_result is None:
+
+
             # 2. 缓存队列为空，新建缓存队列计算任务
-            self.add_new_cache_calc_task(cache_task)
+            CachCalcService.add_new_cache_calc_task(cache_task)
             cache_result = web_cache.setdefault(cache_task.get_key(), None)
         if cache_result is None:
             cache_result = {}
@@ -452,7 +425,7 @@ def start():
     # 1.创建数据库，插入默认用户信息
     SqlTools.insert_default_user()
     # 2. 开启线程
-    th1 = threading.Thread(target=QuerayCalenderService.calder_query_func)  # 查询calendar 线程
+    th1 = threading.Thread(target=QuerayCalenderService.calender_query_func)  # 查询calendar 线程
     th2 = threading.Thread(target=StatisticsCalcService.cache_calc_func)  # 查询calendar 线程
     threads = [th1, th2]
     for t in threads:
@@ -467,9 +440,14 @@ if __name__ == "__main__":
     start()
 
     # 1.添加一个任务到队列中
-    user_info = SqlTools.fetch_user_info("cc")
-    query_task = CalenderQueryTask(user_info, "2018-01-01", "2019-02-28")
-    QuerayCalenderService.add_calender_query_task(query_task)
+    # user_info = SqlTools.fetch_user_info("cc")
+    # query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
+    # QuerayCalenderService.add_calender_query_task(query_task)
+
+    # user_info = SqlTools.fetch_user_info("cc")
+    # calc_task = CacheCalcTask(user_info, "day", "2018-01-01", "2019-02-28")
+    # StatisticsCalcService.add_cache_calc_task(calc_task)
+
 
     aa = input()
     # user_info = SqlTools.fetch_userInfo("cc")

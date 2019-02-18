@@ -6,8 +6,10 @@
 # @File : CalenderTools.py 
 # @Software: PyCharm
 from datetime import datetime, timedelta, time
-from SqlTools import *
+import hashlib
 import re
+
+from SqlTools import *
 import DateTools
 
 
@@ -51,14 +53,24 @@ class CalenderServer:
 
             category = ss[0]                   # 类别
             description = "".join(ss[1:])     # 描述
+            second_category = ""
+            try:
+                second_category = ss[1]
+            except:
+                pass
 
             if start_date_str == end_date_str:
                 # 记录没有跨天，在同一天
                 t_time = DateTools.calc_same_days_delta(start_date_str, start_time_str, end_date_str, end_time_str)
                 if t_time is None or len(t_time) == 0:
                     continue
-                app_list = [user_id,category,description]
+                app_list = [user_id, category, description]
                 app_list.extend(t_time)
+                app_list.append(second_category)
+                # 计算md5值
+                t_md5 = hashlib.md5()
+                [t_md5.update(str(t).encode("utf8")) for t in app_list]
+                app_list.append(t_md5.hexdigest())
                 result.append(app_list)
             else:
                 #  记录跨天，要拆分
@@ -76,6 +88,12 @@ class CalenderServer:
                         continue
                     app_list = [user_id, category, description]
                     app_list.extend(t_time)
+                    app_list.append(second_category)
+                    # 计算md5值
+                    t_md5 = hashlib.md5()
+                    [t_md5.update(str(t).encode("utf8")) for t in app_list]
+                    app_list.append(t_md5.hexdigest())
+                    result.append(app_list)
                     result.append(app_list)
         return result
 

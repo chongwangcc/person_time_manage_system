@@ -34,26 +34,24 @@ class WeeklyCacheCalcService:
     def load_day_details(self, is_force=False):
 
         if self.day_statics_df is None or is_force:
-            self.day_statics_df = SqlTools.get_everyday_cache_df(self.id,
+            self.day_statics_df = SqlTools.get_everyday_cache_df(self.user_id,
                                                         self.first_day_str,
                                                         self.last_day_str)
             #  按照周聚合，保存 按周聚合的结果
-            self.day_statics_df["start_date_str"] = self.day_statics_df["date_str"] \
-                .map(lambda x: DateTools.calc_week_begin_end_date(x)[0])
-            self.day_statics_df["end_date_str"] = self.day_statics_df["date_str"] \
-                .map(lambda x: DateTools.calc_week_begin_end_date(x)[1])
-            group_week = self.day_statics_df.groupby(by=["user_id", "start_date_str", "end_date_str", "category"])
+            group_week = self.day_statics_df.groupby(by=["user_id", "week_start_str", "week_end_str", "category"])
             during_sum_df = group_week.sum().reset_index()
             description_df = group_week["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
             df_final = during_sum_df
             df_final["word_cloud"] = description_df["word_cloud"]
             # 保存 按周聚合的结果
             self.week_statics_df = df_final
+            # print(self.week_statics_df)
 
         if self.day_details_df is None or is_force:
-            self.day_details_df = SqlTools.get_time_details_df(self.id,
+            self.day_details_df = SqlTools.get_time_details_df(self.user_id,
                                                         self.first_day_str,
                                                         self.last_day_str)
+            # print(self.day_details_df)
 
     def calc_missing_during(self):
         """
@@ -131,7 +129,7 @@ class WeeklyCacheCalcService:
         计算睡眠时间走势图
         :return:
         """
-        df_t = self.day_statics_df[self.day_statics_df["category"] == "睡眠"]
+        df_t = self.day_statics_df[self.day_statics_df["category"] == "睡觉"]
         sleep_hours = []
         for index, row in df_t.iterrows():
             t_dict = {"category": row["date_str"], "hours": round(row["during"] / 60, 2)}
@@ -148,7 +146,7 @@ class WeeklyCacheCalcService:
         :param day_padding: 日期不够长时，加长日期
         :return:
         """
-        everday_df = self.day_details_df
+        everday_df = self.day_statics_df
 
         xData = list(set(everday_df["date_str"]))
         xData.sort()
@@ -215,7 +213,7 @@ class MonthlyCacheCalcSerive:
         :return:
         """
         if self.day_statics_df is None or is_force:
-            self.day_statics_df = SqlTools.get_everyday_cache_df(self.id,
+            self.day_statics_df = SqlTools.get_everyday_cache_df(self.user_id,
                                                         self.first_day_str,
                                                         self.last_day_str)
             #  按照月聚合，保存 按周月聚合的结果
@@ -229,7 +227,7 @@ class MonthlyCacheCalcSerive:
             self.month_statics_df = df_final
 
         if self.day_details_df is None or is_force:
-            self.day_details_df = SqlTools.get_time_details_df(self.id,
+            self.day_details_df = SqlTools.get_time_details_df(self.user_id,
                                                         self.first_day_str,
                                                         self.last_day_str)
 

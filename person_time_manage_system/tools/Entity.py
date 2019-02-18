@@ -19,6 +19,13 @@ class CalenderQueryTask:
         self.start_date = start_date
         self.end_date = end_date
 
+    def __str__(self):
+        info = ""
+        info += " user_info="+str(self.user_info.user_name)
+        info += " start_date="+str(self.start_date)
+        info += " end_date=" + str(self.end_date)
+        return info
+
 
 class CacheCalcTask:
     """
@@ -37,7 +44,7 @@ class CacheCalcTask:
         self.end_date_str = end_date_str
 
     def get_key(self):
-        key = str(self.user_info.id)+"_"+self.freq+"_"+self.start_date_str
+        key = str(self.user_info.user_name)+"_"+self.freq+"_"+self.start_date_str+"_"+self.end_date_str
         return key
 
     def __str__(self):
@@ -106,10 +113,13 @@ class Time_Details(Model):
     date_str = CharField(10)
     week_nums = IntegerField(1)
     category = CharField(16)
+    second_category = CharField(16)
     start_time = CharField(10)
     end_time = CharField(10)
     during = IntegerField()
     description = CharField()
+    only_key = CharField()
+    md5 = CharField(128)
 
     def __str__(self):
         return str(self.to_dict())
@@ -124,6 +134,25 @@ class Time_Details(Model):
     def get_table_name():
         return __class__.__name__.lower()
 
+    @staticmethod
+    def is_table_exist():
+        """
+        判断user_info表是否为空
+        :return:
+        """
+        try:
+            sql = "select * from %s limit 1" \
+                  % (__class__.__name__.lower())
+            cu = get_cursor()
+            execute_sql(cu, sql)
+            rows = cu.fetchall()
+            if len(rows) >= 1 :
+                return True
+        except:
+            lock.release()
+            pass
+        return False
+
 
 class Everyday_Cache(Model):
     """
@@ -135,11 +164,12 @@ class Everyday_Cache(Model):
     week_end_str = CharField(10)
     year_str = CharField(4)
     month_str = CharField(7)
-    second_category = CharField(16)
     category = CharField(16)
     during = IntegerField()
     nums = IntegerField()
     word_cloud = CharField()
+    only_key = CharField()
+    md5 = CharField()
 
     def __str__(self):
         return str(self.to_dict())

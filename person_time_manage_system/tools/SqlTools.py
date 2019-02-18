@@ -75,57 +75,55 @@ def get_time_details_df(user_id, start_date, end_date):
     return time_details_df
 
 
-def get_time_details(user_id, start_date, end_date):
+def update_time_detials_df(user_id, start_date_str, end_date_str, df_new):
     """
-    获得时间明细的记录
-    :param user_id:
-    :param start_date: 包含前者，包含后者
-    :param end_date:
+    保存dataframe 到数据库中，先删除，后插入
+    :param usid_id:
+    :param start_date_str:
+    :param end_date_str:
+    :param df_new:
     :return:
     """
-    time_details = Time_Details.query()\
-        .filter(user_id=user_id)\
-        .filter(date_str=start_date, operator=">=")\
-        .filter(date_str=end_date, operator="<=").all()
-    return time_details
+    # 创建表
+    is_update = False
+    update_date_list = []
+    Time_Details.try_create_table()
+    df_new["id"] = 0
+    # 从数据库中读旧内容
+    conn = sqlite3.connect(g_sqlite3_path)
+    sql = "select * from " + Time_Details.get_table_name()
+    sql += " where "
+    sql += " user_id == " + str(user_id) + " and "
+    sql += " date_str >= '" + start_date_str + "' " + " and "
+    sql += " date_str <= '" + end_date_str + "' "
+    df_old = pd.read_sql_query(sql, conn)
+    print("time_detials old_df :"+ str(len(df_old)))
+    print("time_detials df_new :" + str(len(df_new)))
 
+    # 比较两批dataframe 的不同之处
+    delete_df = df_old.append(df_new, sort=True)\
+                        .append(df_new, sort=True)\
+                        .drop_duplicates(subset=["only_key","md5"], keep=False)
+    update_df = df_new.append(df_old, sort=True)\
+                        .append(df_old, sort=True)\
+                        .drop_duplicates(subset=["only_key", "md5"], keep=False)\
+                        .drop_duplicates(subset=["only_key"], keep="first")
+    print("time_detials delete_df :" + str(len(delete_df)))
+    print("time_detials update_df :" + str(len(update_df)))
+    if len(delete_df)>0 or len(update_df)>0:
+        is_update = True
+    # 先删除，后更新  # 保存dataframe
+    [Time_Details.get(id=rows["id"]).delete() for index, rows in delete_df.iterrows()]
 
-def save_time_details(user_id, date_str, detail_list):
-    """
-    保存时间明细记录, 一天的一次性插入，把start_date的删除，然后再插入新纪录
-    :param user_id:
-    :param date_str 这批记录是哪一天的记录？
-    :param detail_list: 列表，每个元素是Time_Details 对象
-    :return:
-    """
-    # 0. 检查detail_list记录是不是全部是user_id + date_str 的记录
-    b_list = [detail.user_id==user_id and date_str==detail.date_str for detail in detail_list]
-    if not all(b_list) and detail_list is not None and len(detail_list)>0:
-        print("detial_list结果不对")
-        return False
+    update_df = update_df.drop(columns=["id"])
+    update_df.to_sql(Time_Details.get_table_name(), conn, if_exists="append", chunksize=500, index=False)
 
-    # 1.删除旧记录
-    old_details = get_time_details(user_id, date_str, date_str)
-    [detail.delete() for detail in old_details]
-
-    # 2.插入新纪录
-    [detail.save() for detail in detail_list]
-    return True
-
-
-def get_everyday_cache(user_id, start_date, end_date):
-    """
-    获得每天缓存的统计数据
-    :param user_id:
-    :param start_date:
-    :param end_date:
-    :return:
-    """
-    everyday_cache = Everyday_Cache.query()\
-        .filter(user_id=user_id)\
-        .filter(date_str=start_date, operator=">=")\
-        .filter(date_str=end_date, operator="<=").all()
-    return everyday_cache
+    # 构造返回结果：是否更新，变动的日期
+    update_date_list.extend(update_df["date_str"].tolist())
+    update_date_list.extend(delete_df["date_str"].tolist())
+    update_date_list = list(set(update_date_list))
+    update_date_list.sort()
+    return is_update, update_date_list
 
 
 def get_everyday_cache_df(user_id, start_date, end_date):
@@ -146,27 +144,50 @@ def get_everyday_cache_df(user_id, start_date, end_date):
     return df
 
 
-def save_everyday_cache(user_id, date_str, cache_list):
+def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
     """
-    保存每天的缓存，先删除记录，后插入记录
+
     :param user_id:
-    :param date_str 这批记录是哪一天的记录？
-    :param cache_list: 列表，每个元素是Time_Details 对象
+    :param start_date_str:
+    :param end_date_str:
+    :param df_new:
     :return:
     """
-    # 0. 检查detail_list记录是不是全部是user_id + date_str 的记录
-    b_list = [cache.user_id == user_id and date_str == cache.date_str for cache in cache_list]
-    if not all(b_list) and cache_list is not None and len(cache_list) > 0:
-        print("cache_list 结果不对")
-        return False
+    is_update = False
+    update_date_list = []
+    Everyday_Cache.try_create_table()
+    # 从数据库中读旧内容
+    conn = sqlite3.connect(g_sqlite3_path)
+    sql = "select * from " + Everyday_Cache.get_table_name()
+    sql += " where "
+    sql += " user_id == " + str(user_id) + " and "
+    sql += " date_str >= '" + start_date_str + "' " + " and "
+    sql += " date_str <= '" + end_date_str + "' "
+    df_old = pd.read_sql_query(sql, conn)
+    print("everyday_cache df_old :" + str(len(df_old)))
+    print("everyday_cache df_new :" + str(len(df_new)))
+    # 比较两批dataframe 的不同之处
+    delete_df = df_old.append(df_new, sort=True) \
+        .append(df_new, sort=True) \
+        .drop_duplicates(subset=["only_key", "md5"], keep=False)
+    update_df = df_new.append(df_old, sort=True) \
+        .append(df_old, sort=True) \
+        .drop_duplicates(subset=["only_key", "md5"], keep=False) \
+        .drop_duplicates(subset=["only_key"], keep="first")
+    print("everyday_cache delete_df :" + str(len(delete_df)))
+    print("everyday_cache update_df :" + str(len(update_df)))
+    if len(delete_df) > 0 or len(update_df) > 0:
+        is_update = True
+    # 先删除，后更新  # 保存dataframe
+    [Everyday_Cache.get(id=rows["id"]).delete() for index, rows in delete_df.iterrows()]
 
-    # 1.删除旧记录
-    old_cache = get_everyday_cache(user_id, date_str, date_str)
-    [cache.delete() for cache in old_cache]
+    #构造返回结果：是否更新，变动的日期
+    update_date_list.extend(update_df["date_str"].tolist())
+    update_date_list.extend(delete_df["date_str"].tolist())
+    update_date_list = list(set(update_date_list))
+    update_date_list.sort()
+    return is_update, update_date_list
 
-    # 2.插入新纪录
-    [cache.save() for cache in cache_list]
-    return True
 
 if __name__ == "__main__":
     pass
