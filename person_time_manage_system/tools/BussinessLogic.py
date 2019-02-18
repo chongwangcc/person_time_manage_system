@@ -74,9 +74,11 @@ class QuerayCalenderService:
                                           time_detail_df)
             # 4. 如果更新了，重新计算每日缓存
             if is_update:
+
                 print(update_date_list)
                 t_task = CacheCalcTask(query_task.user_info, "day", query_task.start_date, query_task.end_date)
                 StatisticsCalcService.add_cache_calc_task(t_task)
+                print("[INFO] add  Statistics_task [" + str(t_task) + "]")
 
             print("[INFO] end handling query_task [" + str(query_task) + "]")
 
@@ -114,13 +116,13 @@ class StatisticsCalcService:
         while True:
             # 1. 阻塞获取  cache计算任务
             cache_task = cache_calc_queue.get(block=True)  # CacheCalcTask 对象
-            print("[INFO] start handling cache_task [" + str(cache_task) + "]")
+            print("[INFO] start handling Statistics_task [" + str(cache_task) + "]")
             # 2. 计算缓存
             cache_service = StatisticsCalcService(cache_task)
-            json_result = cache_service.calc_daily_statistics()
+            cache_service.calc_daily_statistics()
 
             # 3. TODO 将JSON添加到缓存内存中
-            print("[INFO] end handling cache_task [" + str(cache_task) + "]")
+            print("[INFO] end handling Statistics_task [" + str(cache_task) + "]")
 
     @staticmethod
     def md5_my(row):
@@ -159,7 +161,6 @@ class StatisticsCalcService:
 
         df_final["md5"] = df_final.apply(StatisticsCalcService.md5_my, axis=1)
         self.dayly_cache_df = df_final
-
 
         # 2. 保存缓存到数据库中
         is_update, update_date_list = SqlTools.update_everyday_cache_df(self.cache_task.user_info.id,
@@ -406,8 +407,6 @@ class CachCalcService:
         # 2. 查询缓存队列中是否有结果
         cache_result = web_cache.setdefault(cache_task.get_key(), None)
         if cache_result is None:
-
-
             # 2. 缓存队列为空，新建缓存队列计算任务
             CachCalcService.add_new_cache_calc_task(cache_task)
             cache_result = web_cache.setdefault(cache_task.get_key(), None)

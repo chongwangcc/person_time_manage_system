@@ -180,6 +180,7 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
         is_update = True
     # 先删除，后更新  # 保存dataframe
     [Everyday_Cache.get(id=rows["id"]).delete() for index, rows in delete_df.iterrows()]
+    update_df.to_sql(Everyday_Cache.get_table_name(), conn, if_exists="append", chunksize=500, index=False)
 
     #构造返回结果：是否更新，变动的日期
     update_date_list.extend(update_df["date_str"].tolist())
