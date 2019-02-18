@@ -42,7 +42,7 @@ def insert_default_user():
         userinfo.user_name = "cc"
         userinfo.password = "123456"
         userinfo.active = 1
-        userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
+        userinfo.auth_token_file = r"./data/.credentials/cc_calendar.json"
         userinfo.calender_server = "google"
         userinfo.calender_name = "时间日志"
         userinfo.save()
@@ -51,7 +51,7 @@ def insert_default_user():
         userinfo.user_name="mm"
         userinfo.password="123456"
         userinfo.active=1
-        userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
+        userinfo.auth_token_file = r"./data/.credentials/mm_calendar.json"
         userinfo.calender_server = "google"
         userinfo.calender_name = "时间日志"
         userinfo.save()
