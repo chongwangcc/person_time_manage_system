@@ -502,37 +502,171 @@ class YearlyCacheCalcService:
         self.day_statics_df = None
         self.day_details_df = None
         self.year_statics_df = None
+        self.week_statics_df = None
+        self.second_categlory_df = None
         self.year_cache = {}
 
-    def load_day_details(self):
+    def get_year_category_minutes(self, category):
+        """
+        获得 每月缓存中，某类型的 持续时间,单位分钟
+        :param month_df:
+        :param category:
+        :return:
+        """
+        during = 0
+        month_df = self.year_statics_df
+        if month_df is None or category is None or month_df.empty:
+            return during
+        t_df = month_df[(month_df["year_str"] == self.year_str) & (month_df["category"] == category)]
+        if len(t_df) == 1:
+            during = t_df["during"].tolist()[0]
+        return during
+
+    def get_year_category_nums(self, category):
+        """
+        获得 每月缓存中，某类型的 持续时间,单位分钟
+        :param month_df:
+        :param category:
+        :return:
+        """
+        during = 0
+        month_df = self.year_statics_df
+        if month_df is None or category is None or month_df.empty:
+            return during
+        t_df = month_df[(month_df["year_str"] == self.year_str) & (month_df["category"] == category)]
+        if len(t_df) == 1:
+            during = t_df["nums"].tolist()[0]
+        return during
+
+
+    def load_day_details(self, is_force=False):
         """
         加载dataframe
         :return:
         """
+        """
+        从数据库中加载需要的
+        :param is_force:
+        :return:
+        """
+        if self.day_statics_df is None or is_force:
+            self.day_statics_df = SqlTools.get_everyday_cache_df(self.user_id,
+                                                        self.first_day_str,
+                                                        self.last_day_str)
+            #  按照年聚合，保存 按周月聚合的结果
+            group_month = self.day_statics_df.groupby(by=["user_id", "year_str", "category"])
+            during_sum_df = group_month.sum().reset_index()
+            description_df = group_month["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
+            df_final = during_sum_df
+            df_final["word_cloud"] = description_df["word_cloud"]
+            # 保存 按月聚合的结果
+            self.year_statics_df = df_final
+            # 按照 周聚合， 保存 按周聚合的结果
+            group_month = self.day_statics_df.groupby(by=["user_id", "week_start_str", "category"])
+            self.week_statics_df = group_month.sum().reset_index()
+
+        if self.day_details_df is None or is_force:
+            self.day_details_df = SqlTools.get_time_details_df(self.user_id,
+                                                        self.first_day_str,
+                                                        self.last_day_str)
+            self.day_details_df["year_str"] = self.day_details_df["date_str"].map(lambda x: x[:4])
+            group_month = self.day_details_df.groupby(by=["user_id", "year_str", "category", "second_category"])
+            self.second_categlory_df = group_month.sum().reset_index()
+
 
     def calc_basic_nums(self):
         """
         计算一些基本数据
         :return:
         """
+        self.year_cache["year"]=self.year_str
+        self.year_cache["end_date"] = self.last_day_str[5:]
+        self.year_cache["working_tomato_nums"] = round(self.get_year_category_minutes("工作")/30, 2)
+        self.year_cache["study_tomato_nums"] = round(self.get_year_category_minutes("学习") / 30, 2)
+        self.year_cache["workout_nums"] = self.get_year_category_nums("运动")
+        self.year_cache["workout_hours"] = round(self.get_year_category_minutes("运动") / 30, 2)
 
     def calc_words_cloud(self):
         """
-        计算词云
+        计算 词云图频率
         :return:
         """
+        month_cache_df = self.year_statics_df
+        # 1.所有描述合并到一个字符串上
+        description = ""
+        words_series = month_cache_df["word_cloud"]
+        for index, value in words_series.iteritems():
+            description += ","
+            description += value
 
-    def calc_weekly_time_trends(self):
+        # 2. 拆分字符串
+        import re
+        ss = re.split(u",| |;|，|；|:|：|～", description)
+
+        # 3. 统计词频
+        freq_dict = {}
+        for s in ss:
+            if len(s) <= 1:
+                continue
+            freq = freq_dict.setdefault(s,0)
+            freq += 1
+            freq_dict[s] = freq
+
+        #4. 生成需要的格式
+        words = []
+        for key,value in freq_dict.items():
+            t_dict = {"name": key, "value": value}
+            words.append(t_dict)
+        self.year_cache["word_cloud"] = words
+
+    def calc_weekly_time_trends(self, day_padding=7):
         """
-        计算每周的时间走势
+        获得所有明细
+        :param everday_df:
+        :param day_padding: 日期不够长时，加长日期
         :return:
         """
+        everday_df = self.week_statics_df
+        xData = list(set(everday_df["week_start_str"]))
+        xData.sort()
+        legends = list(set(everday_df["category"]))
+        legends.sort()
+        sum = [0 for x in xData]
+        every_day_sum = [[0 for x in xData] for l in legends]
+        for i, t_day in enumerate(xData):
+            t_count = 0
+            for j, t_category in enumerate(legends):
+                t_df = everday_df[(everday_df["week_start_str"]==t_day) & (everday_df["category"]==t_category)]
+                if len(t_df) == 1:
+                    every_day_sum[j][i] = round(t_df.iloc[0]["during"]/60, 2)
+                    t_count += t_df.iloc[0]["during"]
+            sum[i] = round(t_count/60, 2)
+        result = {
+            "xData": xData,
+            "legends": legends,
+            # 每个类别，每一天的时间，shape==（lengends.长度  *  xData.长度）
+            "data": every_day_sum,
+            "sum": sum  # 每天的总时间数
+        }
+        self.year_cache["every_week_category_details"] = result
 
     def calc_rect(self):
         """
         计算矩形图
         :return:
         """
+        # self.second_categlory_df = self.second_categlory_df.sort_values(["category", "second_category"])
+        dict_my = {}
+        for index, row in self.second_categlory_df.iterrows():
+            if row["category"] == "睡觉" or len(row["category"])<1:
+                continue
+            if len(row["second_category"]) < 1:
+                t_dict = dict_my.setdefault(row["category"], {})
+                t_dict["$count"] = round(row["during"]/60, 2)
+            else:
+                t_dict1 = dict_my.setdefault(row["category"], {})
+                t_dict1[row["second_category"]] ={"$count": round(row["during"]/60, 2)}
+        self.year_cache["category_rectangle"] = dict_my
 
     def get_cache_result(self):
         """
