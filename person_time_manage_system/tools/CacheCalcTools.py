@@ -8,8 +8,8 @@
 
 from datetime import datetime, date
 
-import DateTools
-import SqlTools
+from tools import DateTools
+from tools import SqlTools
 
 
 class WeeklyCacheCalcService:

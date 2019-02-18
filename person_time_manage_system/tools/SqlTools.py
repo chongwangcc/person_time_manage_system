@@ -7,7 +7,7 @@
 # @Software: PyCharm
 
 
-from Entity import *
+from tools.Entity import *
 import pandas as pd
 
 g_sqlite3_path = "./data/sqlit3.db"
