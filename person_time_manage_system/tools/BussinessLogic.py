@@ -228,11 +228,9 @@ class CachCalcService:
         result = {}
         last_month_1, last_month_2 = DateTools.calc_last_month_begin_end_date(cache_task.start_date_str)
         this_month_service = MonthlyCacheCalcSerive(cache_task.user_info.id,
-                                              cache_task.start_date_str,
-                                              cache_task.end_date_str)
+                                              cache_task.start_date_str[0:7])
         last_month_service = MonthlyCacheCalcSerive(cache_task.user_info.id,
-                                                    last_month_1,
-                                                    last_month_2)
+                                                    last_month_1[0:7])
         result["this_month"] = this_month_service.get_cache_result()
         result["last_month"] = last_month_service.get_cache_result()
         return result
@@ -400,8 +398,14 @@ class CachCalcService:
         if cache_task is None:
             return {}
         # 1. 新建一条查询任务
+        # 每月需要上月数据，检查下是否更新了
+        t_start_date_str = cache_task.start_date_str
+        if cache_task.freq in ["month"]:
+            last_month_1, last_month_2 = DateTools.calc_last_month_begin_end_date(cache_task.start_date_str)
+            t_start_date_str = last_month_1
+            pass
         query_task = CalenderQueryTask(cache_task.user_info,
-                                       cache_task.start_date_str,
+                                       t_start_date_str,
                                        cache_task.end_date_str)
         QuerayCalenderService.add_calender_query_task(query_task)
         # 2. 查询缓存队列中是否有结果

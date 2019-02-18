@@ -192,6 +192,28 @@ class MonthlyCacheCalcSerive:
     """
     计算每月 cache 缓存 需要 的工具类
     """
+    working_period_dict = {
+        ("05:00:00", "08:00:00"): [0,1,2,3,4,5,6,7],
+        ("09:00:00", "12:00:00"): [0,1,2,3,4,7],
+        ("13:00:00", "18:00:00"): [0,1,2,3,4,7],
+    }
+    @staticmethod
+    def _high_efficient_period_minues(weeknums, start_time, end_time):
+        """
+        计算时间和高效时段的交集
+        :param weeknums:
+        :param start_time:
+        :param end_time:
+        :return:
+        """
+        total_minutes = 0
+        for t_times, t_weeknums in MonthlyCacheCalcSerive.working_period_dict.items():
+            if weeknums in t_weeknums:
+                total_minutes += DateTools.calc_intersection_minutes(t_times[0],
+                                                                     t_times[1],
+                                                                     start_time,
+                                                                     end_time)
+        return total_minutes
 
     def __init__(self, user_id, month_str):
         self.user_id = user_id
@@ -206,7 +228,7 @@ class MonthlyCacheCalcSerive:
         self.month_statics_df = None
         self.month_cache = {}
 
-    def load_day_details(self, is_force):
+    def load_day_details(self, is_force=False):
         """
         从数据库中加载需要的
         :param is_force:
@@ -217,8 +239,8 @@ class MonthlyCacheCalcSerive:
                                                         self.first_day_str,
                                                         self.last_day_str)
             #  按照月聚合，保存 按周月聚合的结果
-            self.dayly_cache_df["month_str"] = self.dayly_cache_df["date_str"].map(lambda x: x[:7])
-            group_month = self.dayly_cache_df.groupby(by=["user_id", "month_str", "category"])
+            self.day_statics_df["month_str"] = self.day_statics_df["date_str"].map(lambda x: x[:7])
+            group_month = self.day_statics_df.groupby(by=["user_id", "month_str", "category"])
             during_sum_df = group_month.sum().reset_index()
             description_df = group_month["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
             df_final = during_sum_df
@@ -240,11 +262,27 @@ class MonthlyCacheCalcSerive:
         """
         during = 0
         month_df = self.month_statics_df
-        if month_df is None or category is None:
+        if month_df is None or category is None or month_df.empty:
             return during
-        t_df = month_df[month_df["month_str"] == self.month_str & month_df["category"] == category]
+        t_df = month_df[(month_df["month_str"] == self.month_str) & (month_df["category"] == category)]
         if len(t_df) == 1:
-            during = t_df["during"]
+            during = t_df["during"].tolist()[0]
+        return during
+
+    def get_month_category_nums(self, category):
+        """
+        获得 每月缓存中，某类型的 持续时间,单位分钟
+        :param month_df:
+        :param category:
+        :return:
+        """
+        during = 0
+        month_df = self.month_statics_df
+        if month_df is None or category is None or month_df.empty:
+            return during
+        t_df = month_df[(month_df["month_str"] == self.month_str) & (month_df["category"] == category)]
+        if len(t_df) == 1:
+            during = t_df["nums"].tolist()[0]
         return during
 
     def calc_month_pass_percent(self):
@@ -275,7 +313,7 @@ class MonthlyCacheCalcSerive:
         """
         month_cache_df = self.month_statics_df
         total_minuts = month_cache_df["during"].sum()
-        living_df = month_cache_df[month_cache_df["category"] != "睡觉" & month_cache_df["category"] != "杂"]
+        living_df = month_cache_df[(month_cache_df["category"] != "睡觉") & (month_cache_df["category"] != "杂")]
         living_minuts = living_df["during"].sum()
         return round(living_minuts/total_minuts, 2)
 
@@ -288,8 +326,8 @@ class MonthlyCacheCalcSerive:
         self.month_cache["end_date"] = self.last_day_str
         self.month_cache["working_tomato_nums"] = round(self.get_month_category_minutes("工作")/30, 2)
         self.month_cache["study_tomato_nums"] = round(self.get_month_category_minutes("学习") / 30, 2)
-        self.month_cache["during_percent"] = "%.2f%%" % self.calc_month_pass_percent()
-        self.month_cache["living_percent"] = "%.2f%%" % self.calc_month_living_percent()
+        self.month_cache["during_percent"] = "%.0f%%" % (self.calc_month_pass_percent()*100)
+        self.month_cache["living_percent"] = "%.0f%%" % (self.calc_month_living_percent()*100)
 
     def calc_words_cloud(self):
         """
@@ -301,7 +339,8 @@ class MonthlyCacheCalcSerive:
         description = ""
         words_series = month_cache_df["word_cloud"]
         for index, value in words_series.iteritems():
-            description += (","+value["word_cloud"])
+            description += ","
+            description += value
 
         # 2. 拆分字符串
         import re
@@ -329,46 +368,47 @@ class MonthlyCacheCalcSerive:
         :return:
         """
         month_str = self.month_str
-        month_df = self.month_statics_df
-        result = [0, 0, 0, 0, 0, 0]  # ？？？、睡眠力、工作力、娱乐力、运动力、学习力
-        month_pass = self.get_month_during_percent(month_str + "-01")
+        month_pass = self.calc_month_pass_percent()
         month_total_days = DateTools.calc_month_total_days(month_str + "-01")
         # 1.工作力 得分计算规则
-        work_minutes = self.get_every_month_category_during(month_df, "工作", month_str)
-        stand_work_hours = 40 * 5 / 7 * month_pass * month_total_days
-        work_score = round(work_minutes / 60 / stand_work_hours * 10, 0)
+        work_minutes = self.get_month_category_minutes("工作")
+        work_minutes /= 60
+        stand_work_hours = 40 * month_pass * month_total_days * 1/ 7
+        work_score = round(work_minutes / stand_work_hours * 10, 0)
         if work_score > 10:
             work_score = 10
 
         # 2. 学习力 得分计算规则
-        study_minutes = self.get_every_month_category_during(month_df, "学习", month_str)
+        study_minutes = self.get_month_category_minutes("学习")
         stand_study_hours = (3 + 8 / 7) * month_total_days * month_pass
         study_score = round(study_minutes / 60 / stand_study_hours * 10, 0)
         if study_score > 10:
             study_score = 10
 
         # 3. 娱乐力 得分计算规则
-        fun_num = self.get_every_month_category_nums(month_df, "娱乐", month_str)
-        stand_fun_nums = int(8 / 7 * month_pass * month_total_days)
+        fun_num = self.get_month_category_nums("娱乐")
+        stand_fun_nums = 1 / 3 * month_pass * month_total_days
         fun_score = round(fun_num / stand_fun_nums, 0)
         if fun_score > 10:
             fun_score = 10
 
         # 4. 运动力 得分计算规则
-        workoutnum = self.get_every_month_category_nums(month_df, "运动", month_str)
+        workoutnum = self.get_month_category_minutes("运动")
         stand_workout_nums = int(5 / 7 * month_total_days * month_pass)
         workout_score = round(workoutnum / stand_workout_nums, 0)
         if workout_score > 10:
             workout_score = 10
 
         # 5. 睡眠力 得分计算规则
-        sleep_minutes = self.get_every_month_category_during(month_df, "睡觉", month_str)
+        sleep_minutes = self.get_month_category_minutes("睡觉")
+        sleep_minutes /= 60
         stand_sleep_hours = 8 * month_pass * month_total_days
-        sleep_score = abs(round((sleep_minutes / 60 - 8) / (month_total_days * 24), 2))
+        stand_sleep_hours /= month_total_days
+        sleep_score = abs(10-abs(8-round((sleep_minutes - stand_sleep_hours), 2)))
         if sleep_score > 10:
             sleep_score = 10
-
-        result = [0, sleep_score, work_score, fun_score, sleep_score, workout_score, study_score]
+        # result = [0, 0, 0, 0, 0, 0]  # ？？？、睡眠力、工作力、娱乐力、运动力、学习力
+        result = [sleep_score, work_score, fun_score, workout_score, study_score]
         self.month_cache["ability_redar"] = [
             {
                 "value": result,
@@ -382,20 +422,18 @@ class MonthlyCacheCalcSerive:
         活着定义：除去[睡觉，杂]的时间
         :return:
         """
-        living_df = self.day_statics_df[self.day_statics_df["category"] != "睡觉"
-                                        & self.day_statics_df["category"] != "杂"]
+        living_df = self.day_statics_df[(self.day_statics_df["category"] != "睡觉")
+                                        & (self.day_statics_df["category"] != "杂")]
+        living_df = living_df.sort_values(by=['date_str'])
 
-        dict_times = {}
+        living_hours = []
         for index, row in living_df.iterrows():
-            m_type = row["category"]
-            minutes = row["during"]
-            date_str = row["date_str"]
-
-            m_list = dict_times.setdefault(m_type, [0 for i in range(31)])
-            day_nums = int(date_str[-2:])
-            m_list[day_nums-1] = minutes
-            dict_times[m_type] = m_list
-        self.month_cache["living_time"] = dict_times
+            t_dict = {"category": row["date_str"], "hours": round(row["during"] / 60, 2)}
+            living_hours.append(t_dict)
+        self.month_cache["living_time"] = {
+            "standard_hours": 12,
+            "actual_hours": living_hours
+        }
 
     def calc_using_rate(self):
         """
@@ -405,10 +443,36 @@ class MonthlyCacheCalcSerive:
         被利用定义：类别属于-- 学习 或 工作
         :return:
         """
+        working_df = self.day_details_df[(self.day_details_df["category"] == "学习")
+                                        |(self.day_details_df["category"] == "工作")]
+        working_df["effiect_minutes"] = working_df.apply(lambda row:
+                                                         MonthlyCacheCalcSerive._high_efficient_period_minues(
+                                                             row["week_nums"],
+                                                             row["start_time"],
+                                                             row["end_time"]
+                                                         ), axis=1)
+        t_df_sum = working_df.groupby(["date_str","week_nums"])["effiect_minutes"].sum().reset_index()
+
+
+        t_df_sum["using_rate"] = t_df_sum.apply(axis = 1,func = (lambda row : round(row["effiect_minutes"] /3, 2)
+                                                                                if row["week_nums"]==5
+                                                                                else round(row["effiect_minutes"]/11,2)
+                                                                 )
+                                                )
+        using_rate = [0 for i in range(31)]
+        for index, row in t_df_sum.iterrows():
+            days = row["date_str"][-2:]
+            using_rate[int(days)-1] = row["using_rate"]
+        self.month_cache["efficient_period_using_rate"] = {
+            "name":self.month_str,
+            "data":using_rate
+        }
 
     def get_cache_result(self):
         # 1. 加载 本月 的每天统计数据
         self.load_day_details()
+        if self.month_statics_df is None or self.month_statics_df.empty:
+            return {}
 
         # 2. 计算需要的缓存数据
         self.calc_basis_nums()

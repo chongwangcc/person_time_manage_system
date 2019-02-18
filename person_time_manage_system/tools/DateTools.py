@@ -57,8 +57,8 @@ def calc_last_month_begin_end_date(date_str):
     """
     m_date = datetime.strptime(date_str, '%Y-%m-%d')
     first = m_date.replace(day=1)
-    lastMonth = first - datetime.timedelta(days=1)
-    last_month_str = lastMonth.strptime(date_str, '%Y-%m-%d')
+    lastMonth = first - timedelta(days=1)
+    last_month_str = lastMonth.strftime('%Y-%m-%d')
     return calc_month_begin_end_date(last_month_str)
 
 
@@ -197,6 +197,37 @@ def gen_year_list_in_days(date_list):
     return l_result
 
 
+def calc_intersection_minutes(start_time1, end_time1, start_time2, end_time2):
+    """
+    计算两个时间段交集的分钟数，不想交返回0
+    :param start_time1:
+    :param end_time1:
+    :param start_time2:
+    :param end_time2:
+    :return:
+    """
+    min_time_str = None
+    max_time_str = None
+    minutes = 0
+
+    if start_time2 >= start_time1 and start_time2 <= end_time1:
+        # 相交
+        min_time_str = start_time2
+        max_time_str = min(end_time1, end_time2)
+    if start_time1 >= start_time2 and start_time1 <= end_time2:
+        # 相交
+        min_time_str = max(start_time1,start_time2)
+        max_time_str = start_time1
+    if min_time_str is not None:
+        time_min = datetime.strptime(min_time_str, '%H:%M:%S')
+        time_max = datetime.strptime(max_time_str, '%H:%M:%S')
+        minutes = (time_max - time_min).total_seconds()/60
+    return minutes
+
+
+
+
+
 if __name__ == "__main__":
     # dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
     # print(dd)
@@ -204,7 +235,7 @@ if __name__ == "__main__":
     # print(dd)
     # dd = gen_year_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
     # print(dd)
-    dd = calc_month_begin_end_date("2019-02-01")
+    dd = calc_week_num("2019-02-19")
     print(dd)
 
 

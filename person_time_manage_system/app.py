@@ -50,12 +50,16 @@ def monthly_statistics(date_str):
     :param date_str 月份字符串，例如：2019-01 :
     :return:
     """
-    #  查找缓存，获得每月数据
+    # 1. 查找缓存，获得每月数据
     first_day, last_day = calc_month_begin_end_date(date_str)
-    task = BussinessLogic.CachCalcService.CacheCalcTask(current_user, "month", first_day, last_day)
+    t_user = SqlTools.fetch_user_info(current_user.user_name)
+    task = BussinessLogic.CacheCalcTask(t_user, "month", first_day, last_day)
     # 2.查询缓存
     result = BussinessLogic.CachCalcService.fetch_cache(task)
     # 3. 构造返回JSON
+    # import json
+    # js = json.dumps(result, sort_keys=True, indent=4, separators=(',', ':'))
+    # print(js)
     return jsonify(result)
 
 
@@ -67,11 +71,10 @@ def yearly_statistics(date_str):
     :param date_str 月份字符串，例如：2019:
     :return:
     """
-    #  查找缓存，获得每年数据
-
     # 1.构造缓存查询任务
     first_day, last_day = calc_year_begin_end_date(date_str)
-    task = BussinessLogic.CacheCalcTask(current_user, "month", first_day, last_day)
+    t_user = SqlTools.fetch_user_info(current_user.user_name)
+    task = BussinessLogic.CacheCalcTask(t_user, "year", first_day, last_day)
     # 2.查询缓存
     result = BussinessLogic.CachCalcService.fetch_cache(task)
     # 3. 构造结果
