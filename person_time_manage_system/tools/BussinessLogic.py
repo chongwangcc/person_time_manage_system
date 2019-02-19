@@ -186,23 +186,23 @@ class CachCalcService:
         """
         for key, value in web_cache.items():
             # 1. 判断数据有没有更新
+            start_time_list = []
             user_name, freq, start_date_str, end_date_str = key.split("_")
             if freq in ["day"]:
                 pass
             elif freq in ["week"]:
                 start_time_list = [DateTools.calc_week_begin_end_date(t_data)[0] for t_data in update_date_list]
-                if start_date_str in start_time_list:
-                    user_info = SqlTools.fetch_user_info(user_name)
-                    calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
-                    CachCalcService.add_new_cache_calc_task(calc_task)
             elif freq in ["month"]:
+                start_time_list = [DateTools.calc_month_begin_end_date(t_data)[0] for t_data in update_date_list]
                 pass
             elif freq in ["year"]:
+                start_time_list = [DateTools.calc_year_begin_end_date(t_data)[0] for t_data in update_date_list]
                 pass
-
             # 2. 对于更新后的数据，重新计算缓存
-
-            pass
+            if start_date_str in start_time_list:
+                user_info = SqlTools.fetch_user_info(user_name)
+                calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
+                CachCalcService.add_new_cache_calc_task(calc_task)
 
     @staticmethod
     def calc_weekly_cache(cache_task):
