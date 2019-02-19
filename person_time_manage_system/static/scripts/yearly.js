@@ -135,7 +135,8 @@ function init1(id_str, data1){
 
     var option = {
            series: [
-                {
+                {width: '90%',
+                height: '90%',
                type: 'wordCloud',
                     gridSize: 2,
                     sizeRange: [12, 50],

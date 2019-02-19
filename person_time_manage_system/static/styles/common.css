@@ -366,19 +366,13 @@ a:hover{
 }
 .p_chart{
     height: 288px;
-
     padding: 5px 10px;
-
     margin-top: 15px;
-
 }
 .p_chart2{
     height:650px;
-
     padding: 5px 10px;
-
     margin-top: 15px;
-
 }
 #map_div{
     width: 96%;

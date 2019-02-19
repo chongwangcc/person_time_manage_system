@@ -159,6 +159,8 @@ function init1(id_str, data1){
     var option = {
            series: [
                 {
+                width: '90%',
+                height: '90%',
                type: 'wordCloud',
                     gridSize: 2,
                     sizeRange: [12, 50],
@@ -259,7 +261,6 @@ function init2(id_str, data1){
     var histogramChart1 = echarts.init(document.getElementById(id_str));
     histogramChart1.setOption(option);
 }
-
 
 function init3(id_str, data){
         var category = [];
