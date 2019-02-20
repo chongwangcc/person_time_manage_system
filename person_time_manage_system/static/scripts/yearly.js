@@ -19,31 +19,27 @@ function initDate(){
         return fmt;
     }
 
-    function addDate(date,days){
-       var d=new Date(date);
-       d.setDate(d.getDate()+days);
-       var m=d.getMonth()+1;
-       return d.getFullYear()+'-'+m+'-'+d.getDate();
-     }
 
     $("#img_datepicker").on("click", function(e) {
          $('#datepicker').datepicker('show');
     });
     $('#datepicker').datepicker({
-        format:'yyyy-mm-dd',
-        onSelect: function(dateText) {
-            var dd = new Date(dateText).Format("yyyy-MM-dd");
-            date_now = dd
-            n = new Date(dateText).getDay()
+        format:'yyyy',
+        changeMonth: false,
+        changeYear: true,
+        showButtonPanel: true,
 
-            m_start_date = addDate(dd, -n)
-            m_end_date = addDate(dd, 6-n)
 
+        onClose: function(dateText, inst) {
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+             //设置开始时间、结束时间
              //设置开始时间、结束时间
             var tlabel =document.getElementById("id_start_date");
-            tlabel.innerHTML=m_start_date
+            tlabel.innerHTML=year
             var tlabel =document.getElementById("id_end_date");
-            tlabel.innerHTML=m_end_date
+            tlabel.innerHTML="12-31"
+
+            date_now=year
 
             //调用后台接口
             clearCharts()
@@ -61,9 +57,9 @@ function clearCharts(){
     tlabel.innerHTML="0"
 
     // 运动、娱乐次数
-    var tlabel =document.getElementById("exercise_nums");
+    var tlabel =document.getElementById("workout_nums");
     tlabel.innerHTML="0"
-    var tlabel =document.getElementById("fun_nums");
+    var tlabel =document.getElementById("workout_hours");
     tlabel.innerHTML="0"
 
     var echart1 = echarts.init(document.getElementById("Chart1"));
@@ -72,11 +68,6 @@ function clearCharts(){
     echart1.clear()
     var echart1 = echarts.init(document.getElementById("Chart3"));
     echart1.clear()
-    var echart1 = echarts.init(document.getElementById("Chart4"));
-    echart1.clear()
-
-     var ba =    document.getElementById("Chart5")
-     ba.innerHTML=""
 
 }
 
@@ -262,7 +253,7 @@ function init2(id_str, data){
             },
             legend: {
                 x: '4%',
-                top: '11%',
+                top: '5%',
                 textStyle: {
                     color: '#90979c',
                 },
