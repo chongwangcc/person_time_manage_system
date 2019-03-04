@@ -112,6 +112,13 @@ function main(){
 $(function(){
     initDate()
     main()
+    //等待服务器推送过来的消息
+     namespace = '/test_conn';
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+        socket.on('server_response', function(res) {
+            console.log(res.data);
+            $('#t').text(res.data);
+        });
 
 })
 
@@ -138,7 +145,9 @@ function init0(data){
 function init5(id_str, data){
         var tbody =document.getElementById(id_str);
         var info = data;
-        console.log(data)
+        if (JSON.stringify(info) === '{}' | (typeof info === 'undefined') ){
+            return info
+        }
         for(var i = 0;i < info.length; i++) { //遍历一下json数据
             var trow = getDataRow(info[i]); //定义一个方法,返回tr数据
             tbody.appendChild(trow);
