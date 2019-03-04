@@ -1,8 +1,9 @@
 Flask>=1.0.2
 flask-login>=0.4.1
+flask-socketio
+flask_oauth
 httplib2
 oauth2client
-flask_oauth
 google-api-python-client
 nanorm
 pandas
