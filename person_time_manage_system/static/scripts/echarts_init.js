@@ -844,117 +844,62 @@ function radar_init(id_str, data1){
 }
 
 //折线图
-function line_init(id_str, data){
-        var category = [];
-        var dottedBase = +new Date();
-        var lineData = [];
-        var barData = [];
-        var missData = [];
-        for (var i = 0; i < data.actual_hours.length; i++) {
+ function line_init(id_str, data1){
 
-            category.push(data.actual_hours[i].category);
-            barData.push(data.actual_hours[i].hours)
-            lineData.push(data.standard_hours);
-            missData.push(data.standard_hours-data.actual_hours[i].hours)
-        }
+    var this_month_data = data1.efficient_period_using_rate.data
 
-        // option
-        option2 = {
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'shadow',
-                    label: {
-                        show: true,
-                        backgroundColor: '#333'
-                    }
-                }
-            },
-            legend: {
-                data: ["标准时长", '实际时长'],
-                textStyle: {
+    option = {
+        tooltip:{},
+        legend: {
+            data:[data1.efficient_period_using_rate.name],
+             textStyle: {
+              color: '#fff'
+          }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : ['1','2','3','4','5','6','7',
+                        '8','9','10','11','12','13','14',
+                        '15','16','17','18','19','20','21',
+                        '22','23','24','25','26','27','28',
+                        '29','30','31'],
+                axisLine: {
+                lineStyle: {
                     color: '#ccc'
                 }
             },
-            xAxis: {
-                data: category,
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value',
                 axisLine: {
-                    lineStyle: {
-                        color: '#ccc'
-                    }
+                lineStyle: {
+                    color: '#ccc'
                 }
             },
-            yAxis: {
-                splitLine: {show: false},
-                axisLine: {
-                    lineStyle: {
-                        color: '#ccc'
-                    }
-                }
-            },
-            series: [{
-                name: '标准时长',
-                type: 'line',
-                smooth: true,
-                showAllSymbol: true,
-                symbol: 'emptyCircle',
-                symbolSize: 15,
-                data: lineData
-            }, {
-                name: '实际时长',
-                type: 'bar',
-                barWidth: 10,
-                itemStyle: {
-                    normal: {
-                        barBorderRadius: 5,
-                        color: new echarts.graphic.LinearGradient(
-                            0, 0, 0, 1,
-                            [
-                                {offset: 0, color: '#14c8d4'},
-                                {offset: 1, color: '#43eec6'}
-                            ]
-                        )
-                    }
-                },
-                data: barData
-            }, {
-                name: '标准时长',
-                type: 'bar',
-                barGap: '-100%',
-                barWidth: 10,
-                itemStyle: {
-                    normal: {
-                        color: new echarts.graphic.LinearGradient(
-                            0, 0, 0, 1,
-                            [
-                                {offset: 0, color: 'rgba(20,200,212,0.5)'},
-                                {offset: 0.2, color: 'rgba(20,200,212,0.2)'},
-                                {offset: 1, color: 'rgba(20,200,212,0)'}
-                            ]
-                        )
-                    }
-                },
-                z: -12,
-                data: lineData
-            }, {
-                name: '标准时长',
-                type: 'pictorialBar',
-                symbol: 'rect',
-                itemStyle: {
-                    normal: {
-                        color: '#0f375f'
-                    }
-                },
-                symbolRepeat: true,
-                symbolSize: [12, 4],
-                symbolMargin: 1,
-                z: -10,
-                data: lineData
-            }]
-        };
-
-        var histogramChart = echarts.init(document.getElementById(id_str));
-        histogramChart.setOption(option2)
+            }
+        ],
+        series : [
+            {
+                name:data1.efficient_period_using_rate.name,
+                type:'line',
+                stack: '总量',
+                areaStyle: {},
+                data:this_month_data
+            }
+        ]
+    };
+    var histogramChart1 = echarts.init(document.getElementById(id_str));
+          histogramChart1.setOption(option);
 }
 
 //矩形图

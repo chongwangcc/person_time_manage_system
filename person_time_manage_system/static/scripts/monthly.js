@@ -119,13 +119,13 @@ function main(){
         init0(data.this_month)
         word_cloud_init("echart1", data.this_month.word_cloud)
         radar_init("echart3", data.this_month.ability_redar)
-        line_init("echart7", data.this_month.living_time)
-        bar_init("echart5", data.this_month)
+        bar_init("echart7", data.this_month.living_time)
+        line_init("echart5", data.this_month)
 
         word_cloud_init("echart2", data.last_month.word_cloud)
         radar_init("echart4", data.last_month.ability_redar)
-        line_init("echart8", data.last_month.living_time)
-        bar_init("echart6", data.last_month)
+        bar_init("echart8", data.last_month.living_time)
+        line_init("echart6", data.last_month)
     })
 }
 
