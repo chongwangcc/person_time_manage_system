@@ -110,25 +110,30 @@ function main(){
     restful_url="/api/v1/statistics/monthly/all/"+date_now
 
     $.get(restful_url).done(function (data){
-
+        // 数据不为空才设置
+        if (typeof(data) === "undefined"){
+            return
+        } else if (JSON.stringify(data) === "{}"){
+            return
+        }
         init0(data.this_month)
         word_cloud_init("echart1", data.this_month.word_cloud)
         radar_init("echart3", data.this_month.ability_redar)
         line_init("echart7", data.this_month.living_time)
         bar_init("echart5", data.this_month)
 
-
         word_cloud_init("echart2", data.last_month.word_cloud)
         radar_init("echart4", data.last_month.ability_redar)
         line_init("echart8", data.last_month.living_time)
         bar_init("echart6", data.last_month)
-
     })
 }
 
 $(function(){
     initDate()
     main()
+    //每隔10秒查询一次
+    setInterval(main, 10000);
 })
 
 function init0(data){

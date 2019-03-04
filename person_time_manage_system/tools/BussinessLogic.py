@@ -13,14 +13,24 @@ from tools import CalenderTools
 from tools.Entity import *
 from tools.CacheCalcTools import *
 
+class SetQueue(queue.Queue):
+    def _init(self, maxsize):
+        self.queue = set()
+    def _put(self, item):
+        self.queue.add(item)
+    def _get(self):
+        return self.queue.pop()
+
 # 0. pd 打印调试开关
 import pandas as pd
 pd.set_option('display.max_columns', None)
 
 # 一些全局队列
-network_calender_query_queue = queue.Queue()    # 网络查询日历的任务队列
-cache_calc_queue = queue.Queue()  # 计算缓存任务的队列
+network_calender_query_queue = SetQueue()    # 网络查询日历的任务队列
+cache_calc_queue = SetQueue()  # 计算缓存任务的队列
 web_cache = {}
+
+
 
 
 class QuerayCalenderService:
@@ -36,6 +46,7 @@ class QuerayCalenderService:
         """
         if query_task is None:
             return False
+
         network_calender_query_queue.put(query_task)
         return True
 
@@ -178,12 +189,14 @@ class CachCalcService:
     """
     计算 缓存数据 对象
     """
+    update_key = []
     @staticmethod
     def scan_and_update(user_id, update_date_list):
         """
         TODO 扫描计算缓存key, 计算json数据
         :return:
         """
+        CachCalcService.update_key=[]
         for key, value in web_cache.items():
             # 1. 判断数据有没有更新
             start_time_list = []
@@ -200,6 +213,7 @@ class CachCalcService:
                 pass
             # 2. 对于更新后的数据，重新计算缓存
             if start_date_str in start_time_list:
+                CachCalcService.update_key.append(key)
                 user_info = SqlTools.fetch_user_info(user_name)
                 calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
                 CachCalcService.add_new_cache_calc_task(calc_task)
@@ -351,14 +365,18 @@ class CachCalcService:
         # 1. 新建一条查询任务
         # 每月概况需要上月数据，检查下是否更新了
         t_start_date_str = cache_task.start_date_str
+        query_task = CalenderQueryTask(cache_task.user_info,
+                                       t_start_date_str,
+                                       cache_task.end_date_str)
+        QuerayCalenderService.add_calender_query_task(query_task)
         if cache_task.freq in ["month"]:
             last_month_1, last_month_2 = DateTools.calc_last_month_begin_end_date(cache_task.start_date_str)
             t_start_date_str = last_month_1
-            pass
             query_task = CalenderQueryTask(cache_task.user_info,
                                            t_start_date_str,
                                            cache_task.end_date_str)
             QuerayCalenderService.add_calender_query_task(query_task)
+
         # 2. 查询缓存队列中是否有结果
         cache_result = web_cache.setdefault(cache_task.get_key(), None)
         if cache_result is None:

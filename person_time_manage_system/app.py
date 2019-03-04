@@ -13,8 +13,6 @@ from tools import SqlTools
 from restful import app, socketio
 
 
-
-
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():

@@ -85,18 +85,3 @@ def yearly_statistics(date_str):
     result = BussinessLogic.CachCalcService.fetch_cache(task)
     # 3. 构造结果
     return jsonify(result)
-
-
-@socketio.on('connect', namespace='/test_conn')
-def test_connect():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_thread)
-
-def background_thread():
-    while True:
-        socketio.sleep(5)
-        t = 1
-        socketio.emit('server_response',
-                      {'data': t},namespace='/test_conn')

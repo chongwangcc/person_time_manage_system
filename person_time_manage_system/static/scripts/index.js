@@ -97,9 +97,14 @@ function getNowFormatDate() {
 
 function main(){
 
-
-
     $.get("/api/v1/statistics/weekly/all/"+date_now).done(function (data){
+        // 数据不为空才设置
+        if (typeof(data) === "undefined"){
+            return
+        } else if (JSON.stringify(data) === "{}"){
+            return
+        }
+
         init0(data)
         dashboard_init("Chart1", data.working_and_study_tomato_nums_of_each_day)
         bar_init("Chart2", data.sleep_hours)
@@ -112,14 +117,8 @@ function main(){
 $(function(){
     initDate()
     main()
-    //等待服务器推送过来的消息
-     namespace = '/test_conn';
-        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-        socket.on('server_response', function(res) {
-            console.log(res.data);
-            $('#t').text(res.data);
-        });
-
+    //每隔10秒查询一次
+    setInterval(main, 10000);
 })
 
 function init0(data){

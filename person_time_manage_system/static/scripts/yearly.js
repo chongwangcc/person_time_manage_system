@@ -88,6 +88,13 @@ function getNowFormatDate() {
 
 function main(){
     $.get("/api/v1/statistics/yearly/all/"+date_now).done(function (data){
+        // 数据不为空才设置
+        if (typeof(data) === "undefined"){
+            return
+        } else if (JSON.stringify(data) === "{}"){
+            return
+        }
+
         init0(data)
         word_cloud_init("Chart1", data.word_cloud)
         select_bar_init("Chart2", data.every_week_category_details)
@@ -98,7 +105,8 @@ function main(){
 $(function(){
     initDate()
     main()
-
+    //每隔10秒查询一次
+    setInterval(main, 10000);
 })
 
 function init0(data){
