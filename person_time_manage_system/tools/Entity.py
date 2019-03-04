@@ -64,6 +64,7 @@ class User_Info(Model, UserMixin):
     calender_server = CharField(128)
     calender_name = CharField(128)
     email = CharField(128)
+    auth_code = CharField()
 
     def get_id(self):
         return self.user_name

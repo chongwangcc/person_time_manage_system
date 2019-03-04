@@ -6,3 +6,4 @@ flask_oauth
 google-api-python-client
 nanorm
 pandas
+ConfigParser

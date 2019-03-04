@@ -32,26 +32,30 @@ class WeeklyCacheCalcService:
         self.week_cache = {}
 
     def load_day_details(self, is_force=False):
-
-        if self.day_statics_df is None or is_force:
-            self.day_statics_df = SqlTools.get_everyday_cache_df(self.user_id,
-                                                        self.first_day_str,
-                                                        self.last_day_str)
-            #  按照周聚合，保存 按周聚合的结果
-            group_week = self.day_statics_df.groupby(by=["user_id", "week_start_str", "week_end_str", "category"])
-            during_sum_df = group_week.sum().reset_index()
-            description_df = group_week["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
-            df_final = during_sum_df
-            df_final["word_cloud"] = description_df["word_cloud"]
-            # 保存 按周聚合的结果
-            self.week_statics_df = df_final
-            # print(self.week_statics_df)
-
-        if self.day_details_df is None or is_force:
-            self.day_details_df = SqlTools.get_time_details_df(self.user_id,
-                                                        self.first_day_str,
-                                                        self.last_day_str)
-            # print(self.day_details_df)
+        try:
+            if self.day_statics_df is None or is_force:
+                self.day_statics_df = SqlTools.get_everyday_cache_df(self.user_id,
+                                                            self.first_day_str,
+                                                            self.last_day_str)
+                #  按照周聚合，保存 按周聚合的结果
+                group_week = self.day_statics_df.groupby(by=["user_id", "week_start_str", "week_end_str", "category"])
+                during_sum_df = group_week.sum().reset_index()
+                description_df = group_week["word_cloud"].aggregate(lambda x: ",".join(x)).reset_index()
+                df_final = during_sum_df
+                df_final["word_cloud"] = description_df["word_cloud"]
+                # 保存 按周聚合的结果
+                self.week_statics_df = df_final
+                # print(self.week_statics_df)
+        except:
+            pass
+        try:
+            if self.day_details_df is None or is_force:
+                self.day_details_df = SqlTools.get_time_details_df(self.user_id,
+                                                            self.first_day_str,
+                                                            self.last_day_str)
+                # print(self.day_details_df)
+        except:
+            pass
 
     def calc_missing_during(self):
         """

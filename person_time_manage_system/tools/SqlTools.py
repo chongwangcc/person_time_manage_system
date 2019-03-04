@@ -45,6 +45,10 @@ def insert_default_user():
         userinfo.auth_token_file = r"./data/.credentials/cc_calendar.json"
         userinfo.calender_server = "google"
         userinfo.calender_name = "时间日志"
+        auth_code = None
+        with open(userinfo.auth_token_file, encoding="utf8") as f:
+            auth_code = f.read()
+        userinfo.auth_code = auth_code
         userinfo.save()
 
         userinfo = User_Info()
@@ -54,6 +58,10 @@ def insert_default_user():
         userinfo.auth_token_file = r"./data/.credentials/mm_calendar.json"
         userinfo.calender_server = "google"
         userinfo.calender_name = "时间日志"
+        auth_code = None
+        with open(userinfo.auth_token_file, encoding="utf8") as f:
+            auth_code = f.read()
+        userinfo.auth_code = auth_code
         userinfo.save()
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
-from __future__ import print_function
+
 import httplib2
 import os
 
@@ -8,6 +8,9 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+import configparser
+
+from SqlTools import fetch_user_info
 
 try:
     import argparse
@@ -15,15 +18,23 @@ try:
     flags = args.parse_args()
 except ImportError:
     flags = None
-
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/calendar-python-quickstart.json
+cf = configparser.ConfigParser()
+cf.read(r"./data/base.conf")
 
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = './data/client_secret.json'
-APPLICATION_NAME = 'Google Calendar API'
-HOME_DIR = "./data/"
+CLIENT_SECRET_FILE = cf.get("google_calender", "CLIENT_SECRET_FILE")
+APPLICATION_NAME = cf.get("google_calender", "APPLICATION_NAME")
+HOME_DIR = cf.get("google_calender", "TMP_DIR")
 
+has_proxy = cf.getboolean("proxy", "user_proxy")
+if has_proxy:
+    fanqian_proxy = httplib2.ProxyInfo(
+                    httplib2.socks.PROXY_TYPE_SOCKS5,
+                    cf.get("proxy", "proxy_ip"),
+                    cf.getint("proxy", "proxy_port")
+                    )
+else:
+    fanqian_proxy = None
 
 def get_credentials(user_name):
     """Gets valid user credentials from storage.
@@ -34,6 +45,9 @@ def get_credentials(user_name):
     Returns:
         Credentials, the obtained credential.
     """
+    # TODO 从网络中获得授权文件，保存到数据库中
+
+    # 0.创建临时文件
     credential_dir = os.path.join(HOME_DIR, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
@@ -42,42 +56,55 @@ def get_credentials(user_name):
 
     store = Storage(credential_path)
     credentials = store.get()
+    # 1.从网络中获取
     if not credentials or credentials.invalid:
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
-        http = httplib2.Http(proxy_info=httplib2.ProxyInfo(
-            httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080))
-
+        http = httplib2.Http(proxy_info=fanqian_proxy)
         credentials = tools.run_flow(flow, store, flags, http)
 
         print('Storing credentials to ' + credential_path)
+
+    # 2.保存到sql数据库中
+    # TODO 待测试
+    user_info = fetch_user_info(user_name)
+    with open(credential_path, encoding="utf8") as f:
+        user_info.auth_code = f.read()
+    user_info.save()
     return credentials
 
 
-def get_service(user_name, credential_path=None, proxy=None):
+def get_credentials_from_db(user_name):
+    """
+    从数据库中获得授权文件
+    """
+    credentials = None
+    try:
+        user_info = fetch_user_info(user_name)
+        credentials = client.Credentials.new_from_json(user_info.auth_code)
+    except:
+        pass
+    return credentials
+
+
+def get_service(user_name):
     """
     获得日历的server
     :return:
     """
     # 获得授权文件
-    if credential_path is None:
+    credentials = get_credentials_from_db(user_name)
+    if credentials is None:
         credentials = get_credentials(user_name)
-    else:
-        store = Storage(credential_path)
-        credentials = store.get()
 
     # 设置代理
-    if proxy is None:
-        http = httplib2.Http(proxy_info=httplib2.ProxyInfo(
-            httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080))
-        http = credentials.authorize(http)
-        service = discovery.build('calendar', 'v3', http=http)
-        return service
-    else:
-        http = httplib2.Http(proxy_info=proxy)
-        http = credentials.authorize(http)
-        service = discovery.build('calendar', 'v3', http=http)
-        return service
+    http = httplib2.Http(proxy_info=fanqian_proxy)
+    http = credentials.authorize(http)
+
+    # 3. 获得日历服务
+    service = discovery.build('calendar', 'v3', http=http)
+    return service
+
 
 
 def get_calender_id(credential_service, name=u"时间日志"):

@@ -158,12 +158,8 @@ class CalenderServer:
             # 1.准备参数
             time_min = self.format_date_str_for_calender_server(start_date, "google")
             time_max = self.format_date_str_for_calender_server(end_date, "google")
-            # TODO 网络代理，写到配置文件中
-            proxy = httplib2.ProxyInfo( httplib2.socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 1080)
             # 2. 创建 日历 服务
-            service = GoogleAuth.get_service(userinfo.user_name,
-                                             userinfo.auth_token_file,
-                                             proxy=proxy)
+            service = GoogleAuth.get_service(userinfo.user_name)
             calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
 
             # 3. 连接日历 获得结果
