@@ -34,30 +34,45 @@ python3 app.py
 
 ![avatar](./_doc/every_day_sum.PNG)
 
+![avatar](./_doc/every_month_sum.PNG)
+
+
+![avatar](./_doc/every_year_sum.PNG)
 
 ## 3. 使用说明
 
 
 ## 4. 代码目录结构说明
 ```
+./
+├── _bin
 ├── _doc
 ├── person_time_manage_system
 │   ├── app.py
 │   ├── data
 │   │   ├── base.conf
-│   │   ├── client_id.json
 │   │   ├── client_secret.json
-│   │   └── users_info.json
+│   │   └── sqlit3.db
 │   ├── static
-│   │   ├── fonts
+│   │   ├── favicon.ico
 │   │   ├── images
 │   │   ├── scripts
 │   │   └── styles
 │   ├── templates
 │   └── tools
+│       ├── BussinessLogic.py
+│       ├── CacheCalcTools.py
+│       ├── CalenderTools.py
+│       ├── DateTools.py
+│       ├── Entity.py
+│       ├── GoogleAuth.py
+│       ├── __init__.py
+│       ├── restful.py
+│       └── SqlTools.py
 ├── README.md
 ├── requirements.txt
-├── setup.py
+└── setup.py
+
 ```
 
 ## 5. 常见问题
@@ -66,6 +81,6 @@ python3 app.py
 ## 6. 后续开发计划
 - 优化web，把icon换为更切合主题的图
 - 增加用户注册功能，关联google账户
-- 增加缓存层，提高web响应速度
-- 增加 "每月概况"，"年度报表"、"习惯分析" 等web可视化界面
+- 增加 "习惯分析" 等web可视化界面
 - 除google日历外，增加更多日历服务，
+- favicon.ico 图标显示
