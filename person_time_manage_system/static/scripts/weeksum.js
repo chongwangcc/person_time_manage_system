@@ -95,60 +95,43 @@ function getNowFormatDate() {
     return currentdate;
 }
 
-function main(){
+function call_back(data){
+    // 数据不为空才设置
+    if (typeof(data) === "undefined"){
+        return
+    } else if (JSON.stringify(data) === "{}"){
+        return
+    }
 
-    $.get("/api/v1/statistics/weekly/all/"+date_now).done(function (data){
-        // 数据不为空才设置
-        if (typeof(data) === "undefined"){
-            return
-        } else if (JSON.stringify(data) === "{}"){
-            return
-        }
-
-        init0(data)
-        dashboard_init("Chart1", data.working_and_study_tomato_nums_of_each_day)
-        bar_init("Chart2", data.sleep_hours)
-        select_bar_init("Chart3", data.every_day_category_details)
-        pie_init("Chart4", data.each_category_time_sum)
-        init5("Chart5", data.missing_info)
-    })
+    init0(data)
+    dashboard_init("Chart1", data.working_and_study_tomato_nums_of_each_day)
+    bar_init("Chart2", data.sleep_hours)
+    select_bar_init("Chart3", data.every_day_category_details)
+    pie_init("Chart4", data.each_category_time_sum)
+    init5("Chart5", data.missing_info)
 }
 
 $(function(){
     initDate()
-    main()
+    $.get("/api/v1/statistics/weekly/all/"+date_now).done(call_back)
     //每隔10秒查询一次
     // setInterval(main, 10000);
 
     // socket和后台通讯
-    var websocket_url =  document.domain + ':' + location.port + '/train_data';
+    var websocket_url =  document.domain + ':' + location.port + '/update';
     var socket = io.connect(websocket_url);
     //发送消息
-    socket.emit('checked_format', upload_data);
+    socket.emit('weeksum', {"date_str":date_now});
     //监听回复的消息
-    socket.on('response',function(data){
-        var code = data.code;
-        if (data.code == 200){
-            var process = data.data.process;
-            var log_info = data.data.log_info;
+    // socket.on('weeksum',call_back);
+    socket.on('weeksum',function (data) {
+         console.log("weeksum")
+     });
 
-            // 更新控件
-            append_text($, "checked_format_logging_id", log_info);
-            element.progress('checked_format_percent', process+"%")
-
-            if(process >= 100){
-                //检查成功 下一步可用
-                enable_button($, "nextBtn");
-                socket.close();
-            }
-
-        }else{
-            enable_button($,"preBtn");
-            layer.msg("检查数据格式失败,数据格式不对!")
-            var log_info = data.data.log_info;
-             append_text($, "checked_format_logging_id", log_info);
-        }
-        });
+     socket.emit('monthsum', {"date_str":date_now});
+     socket.on('monthsum',function (data) {
+         console.log("monthsum")
+     });
 })
 
 function init0(data){

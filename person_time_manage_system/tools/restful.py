@@ -6,14 +6,19 @@
 # @File : restful.py.py 
 # @Software: PyCharm
 
+
+from threading import Lock
+import time
+import threading
+
 from flask import Flask, render_template, jsonify, request, redirect
 from flask_login.login_manager import LoginManager
 from flask_login import (current_user, login_required, login_user, logout_user, confirm_login, fresh_login_required)
 from tools.DateTools import calc_week_begin_end_date, calc_month_begin_end_date, calc_year_begin_end_date
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, Namespace, emit
+
 from tools import SqlTools
 from tools import BussinessLogic
-from threading import Lock
 
 
 app = Flask(__name__, static_folder='../static', template_folder="../static/html")
@@ -85,3 +90,35 @@ def yearly_statistics(date_str):
     result = BussinessLogic.CachCalcService.fetch_cache(task)
     # 3. 构造结果
     return jsonify(result)
+
+
+class WebResultFetcher(Namespace):
+    """
+
+    """
+    def on_connect(self):
+        print(threading.currentThread().getName(), "connect", current_user.user_name)
+        pass
+
+    def on_disconnect(self):
+        print(threading.currentThread().getName(), "disconnect")
+        pass
+
+    def on_weeksum(self, data):
+        date_str = data.get('date_str')
+        print(threading.currentThread().getName(), date_str, "on_weeksum")
+        emit("weeksum", {"data": "msg"})
+
+
+    def on_monthsum(self, data):
+        date_str = data.get('date_str')
+        print(threading.currentThread().getName(), date_str, "on_monthsum")
+        emit("monthsum", {"data": "msg"})
+
+    def on_yearsum(self, data):
+        date_str = data.get('date_str')
+        print(threading.currentThread().getName(), date_str, "on_yearsum")
+        emit("yearsum",{"data":"msg"})
+
+
+socketio.on_namespace(WebResultFetcher('/update'))

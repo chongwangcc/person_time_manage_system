@@ -34,7 +34,7 @@ def insert_default_user():
     :return:
     """
     if not User_Info.is_user_exist():
-        print("insert default user cc, mm")
+        # print("insert default user cc, mm")
         global g_sqlite3_path
         set_db_name(g_sqlite3_path)
 
@@ -105,8 +105,8 @@ def update_time_detials_df(user_id, start_date_str, end_date_str, df_new):
     sql += " date_str >= '" + start_date_str + "' " + " and "
     sql += " date_str <= '" + end_date_str + "' "
     df_old = pd.read_sql_query(sql, conn)
-    print("time_detials old_df :"+ str(len(df_old)))
-    print("time_detials df_new :" + str(len(df_new)))
+    # print("time_detials old_df :"+ str(len(df_old)))
+    # print("time_detials df_new :" + str(len(df_new)))
 
     # 比较两批dataframe 的不同之处
     delete_df = df_old.append(df_new, sort=True)\
@@ -116,8 +116,8 @@ def update_time_detials_df(user_id, start_date_str, end_date_str, df_new):
                         .append(df_old, sort=True)\
                         .drop_duplicates(subset=["only_key", "md5"], keep=False)\
                         .drop_duplicates(subset=["only_key"], keep="first")
-    print("time_detials delete_df :" + str(len(delete_df)))
-    print("time_detials update_df :" + str(len(update_df)))
+    # print("time_detials delete_df :" + str(len(delete_df)))
+    # print("time_detials update_df :" + str(len(update_df)))
     if len(delete_df)>0 or len(update_df)>0:
         is_update = True
     # 先删除，后更新  # 保存dataframe
@@ -172,8 +172,8 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
     sql += " date_str >= '" + start_date_str + "' " + " and "
     sql += " date_str <= '" + end_date_str + "' "
     df_old = pd.read_sql_query(sql, conn)
-    print("everyday_cache df_old :" + str(len(df_old)))
-    print("everyday_cache df_new :" + str(len(df_new)))
+    # print("everyday_cache df_old :" + str(len(df_old)))
+    # print("everyday_cache df_new :" + str(len(df_new)))
     # 比较两批dataframe 的不同之处
     delete_df = df_old.append(df_new, sort=True) \
         .append(df_new, sort=True) \
@@ -182,8 +182,8 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
         .append(df_old, sort=True) \
         .drop_duplicates(subset=["only_key", "md5"], keep=False) \
         .drop_duplicates(subset=["only_key"], keep="first")
-    print("everyday_cache delete_df :" + str(len(delete_df)))
-    print("everyday_cache update_df :" + str(len(update_df)))
+    # print("everyday_cache delete_df :" + str(len(delete_df)))
+    # print("everyday_cache update_df :" + str(len(update_df)))
     if len(delete_df) > 0 or len(update_df) > 0:
         is_update = True
     # 先删除，后更新  # 保存dataframe
