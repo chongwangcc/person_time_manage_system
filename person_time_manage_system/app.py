@@ -31,7 +31,6 @@ def yearlySum():
     return render_template("yearly.html", user_name=current_user.user_name)
 
 
-
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     """

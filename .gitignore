@@ -1,3 +1,4 @@
+*.db
 person_time_manage_system/person_time_manage_system.egg-info/*
 person_time_manage_system/data/.credentials/*
 attach_file/*

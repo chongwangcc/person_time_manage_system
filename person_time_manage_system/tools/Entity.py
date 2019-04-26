@@ -49,9 +49,8 @@ class CacheCalcTask:
 
     def __str__(self):
         return self.get_key()
-
-
 # SQLite 数据库中 实体结构定义---------------------------
+
 
 class User_Info(Model, UserMixin):
     """

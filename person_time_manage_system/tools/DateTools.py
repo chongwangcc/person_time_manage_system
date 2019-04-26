@@ -225,9 +225,6 @@ def calc_intersection_minutes(start_time1, end_time1, start_time2, end_time2):
     return minutes
 
 
-
-
-
 if __name__ == "__main__":
     # dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
     # print(dd)

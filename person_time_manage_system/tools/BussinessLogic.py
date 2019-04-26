@@ -31,8 +31,6 @@ cache_calc_queue = SetQueue()  # 计算缓存任务的队列
 web_cache = {}
 
 
-
-
 class QuerayCalenderService:
     """
     处理查询日历的服务类

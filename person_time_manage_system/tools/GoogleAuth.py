@@ -106,7 +106,6 @@ def get_service(user_name):
     return service
 
 
-
 def get_calender_id(credential_service, name=u"时间日志"):
     """
     获得 日历 ID
