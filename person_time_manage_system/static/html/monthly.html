@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>个人时间管理系统</title>
-    <link href="../static/styles/common.css" rel="stylesheet">
-    <link href="../static/styles/bootstrap.min.css"  rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="../static/styles/dcalendar.picker.css"/>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-
-    <script src="../static/scripts/Plugin/jquery.min.js"></script>
-    <script src="../static/scripts/Plugin/jquery-ui.min.js"></script>
-    <script src="../static/scripts/Plugin/echarts.min.js"></script>
-    <script src="../static/scripts/Plugin/echarts-wordcloud.min.js"></script>
-    <script src="../static/scripts/echarts_init.js"></script>
-    <script src="../static/scripts/socket.io.min.js"></script>
-    <script src="../static/scripts/monthly.js"></script>
+    <link href="/static/styles/common.css" rel="stylesheet">
+    <link href="/static/styles/bootstrap.min.css"  rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/static/styles/dcalendar.picker.css"/>
+    <script src="/static/scripts/Plugin/jquery.min.js"></script>
+    <script src="/static/scripts/Plugin/jquery-ui.min.js"></script>
+    <script src="/static/scripts/Plugin/echarts.min.js"></script>
+    <script src="/static/scripts/Plugin/echarts-wordcloud.min.js"></script>
+    <script src="/static/scripts/echarts_init.js"></script>
+    <script src="/static/scripts/socket.io.min.js"></script>
+    <script src="/static/scripts/monthly.js"></script>
     <style type="text/css">
 		.ui-datepicker-calendar {
 			display: none;// 不显示日期面板
@@ -50,7 +47,7 @@
   <div class="con_div">
       <div class="con_div_text left">
           <div class="con_div_text01 left">
-              <img id="img_datepicker" src="../static/images/info_7.png" class="left text01_img"/>
+              <img id="img_datepicker" src="/static/images/info_7.png" class="left text01_img"/>
               <input type="text" id="datepicker" hidden="true">
               <div class="left text01_div">
                   <p>开始时间</p>
@@ -58,7 +55,7 @@
               </div>
           </div>
           <div class="con_div_text01 right">
-              <img src="../static/images/info_8.png" class="left text01_img"/>
+              <img src="/static/images/info_8.png" class="left text01_img"/>
               <div class="left text01_div">
                   <p>结束时间</p>
                   <p id="id_end_date"></p>
@@ -67,7 +64,7 @@
       </div>
       <div class="con_div_text left">
           <div class="con_div_text01 left">
-              <img src="../static/images/info_9.png" class="left text01_img"/>
+              <img src="/static/images/info_9.png" class="left text01_img"/>
               <div class="left text01_div">
                   <p>工作总番茄数</p>
                  <p id="id_work_tomato_nums" class="sky">0</p>
@@ -75,7 +72,7 @@
               </div>
           </div>
           <div class="con_div_text01 right">
-              <img src="../static/images/info_10.png" class="left text01_img"/>
+              <img src="/static/images/info_10.png" class="left text01_img"/>
               <div class="left text01_div">
                   <p>学习总番茄数</p>
                   <p id="id_study_tomato_nums" class="sky">0</p>
@@ -85,14 +82,14 @@
       <div class="con_div_text left">
 
           <div class="con_div_text01 left">
-              <img src="../static/images/info_11.png" class="left text01_img"/>
+              <img src="/static/images/info_11.png" class="left text01_img"/>
               <div class="left text01_div">
                   <p>本月已过</p>
                    <p id="id_month_passed" class="org">0%</p>
               </div>
           </div>
           <div class="con_div_text01 right">
-              <img src="../static/images/info_12.png" class="left text01_img"/>
+              <img src="/static/images/info_12.png" class="left text01_img"/>
               <div class="left text01_div">
                   <p>活着时间占比</p>
                   <p id="id_living_percent" class="org">0%</p>
@@ -104,41 +101,41 @@
     <div class="div_any">
         <div class="left div_any01">
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_5.png">本月主题词云</div>
+                <div class="div_any_title"><img src="/static/images/title_5.png">本月主题词云</div>
                 <p id="echart1" class="p_chart"></p>
             </div>
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_6.png">上月主题词云</div>
+                <div class="div_any_title"><img src="/static/images/title_6.png">上月主题词云</div>
                 <p id="echart2" class="p_chart"></p>
             </div>
         </div>
         <div class="left div_any01">
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_7.png">本月能力雷达图</div>
+                <div class="div_any_title"><img src="/static/images/title_7.png">本月能力雷达图</div>
                 <p id="echart3" class="p_chart"></p>
             </div>
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_8.png">上月能力雷达图</div>
+                <div class="div_any_title"><img src="/static/images/title_8.png">上月能力雷达图</div>
                 <p id="echart4" class="p_chart"></p>
             </div>
         </div>
         <div class="left div_any01">
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_9.png">本月高效时段利用率</div>
+                <div class="div_any_title"><img src="/static/images/title_9.png">本月高效时段利用率</div>
                 <p id="echart5" class="p_chart"></p>
             </div>
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_10.png">上月高效时段利用率</div>
+                <div class="div_any_title"><img src="/static/images/title_10.png">上月高效时段利用率</div>
                 <p id="echart6" class="p_chart"></p>
             </div>
         </div>
         <div class="left div_any01">
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_11.png">本月活着时长走势图</div>
+                <div class="div_any_title"><img src="/static/images/title_11.png">本月活着时长走势图</div>
                 <p id="echart7" class="p_chart"></p>
             </div>
             <div class="div_any_child">
-                <div class="div_any_title"><img src="../static/images/title_12.png">上月活着时长走势图</div>
+                <div class="div_any_title"><img src="/static/images/title_12.png">上月活着时长走势图</div>
                 <p id="echart8" class="p_chart"></p>
             </div>
         </div>

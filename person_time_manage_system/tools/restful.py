@@ -16,7 +16,7 @@ from tools import BussinessLogic
 from threading import Lock
 
 
-app = Flask(__name__, static_folder='../static', template_folder="../templates")
+app = Flask(__name__, static_folder='../static', template_folder="../static/html")
 app.config['SECRET_KEY'] = '123456'
 
 login_manager = LoginManager()
