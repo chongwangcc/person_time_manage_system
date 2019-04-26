@@ -16,7 +16,7 @@ from tools.restful import app, socketio
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():
-    return render_template("index.html", user_name=current_user.user_name)
+    return render_template("weeksum.html", user_name=current_user.user_name)
 
 
 @app.route("/monthlySum/", methods=["GET"])

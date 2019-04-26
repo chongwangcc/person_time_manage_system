@@ -118,7 +118,37 @@ $(function(){
     initDate()
     main()
     //每隔10秒查询一次
-    setInterval(main, 10000);
+    // setInterval(main, 10000);
+
+    // socket和后台通讯
+    var websocket_url =  document.domain + ':' + location.port + '/train_data';
+    var socket = io.connect(websocket_url);
+    //发送消息
+    socket.emit('checked_format', upload_data);
+    //监听回复的消息
+    socket.on('response',function(data){
+        var code = data.code;
+        if (data.code == 200){
+            var process = data.data.process;
+            var log_info = data.data.log_info;
+
+            // 更新控件
+            append_text($, "checked_format_logging_id", log_info);
+            element.progress('checked_format_percent', process+"%")
+
+            if(process >= 100){
+                //检查成功 下一步可用
+                enable_button($, "nextBtn");
+                socket.close();
+            }
+
+        }else{
+            enable_button($,"preBtn");
+            layer.msg("检查数据格式失败,数据格式不对!")
+            var log_info = data.data.log_info;
+             append_text($, "checked_format_logging_id", log_info);
+        }
+        });
 })
 
 function init0(data){
