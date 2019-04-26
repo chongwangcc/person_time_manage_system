@@ -157,19 +157,19 @@ class CalenderServer:
             import httplib2
             # 1.准备参数
             time_min = self.format_date_str_for_calender_server(start_date, "google")
-            time_max = self.format_date_str_for_calender_server(end_date, "google")
+            time_max = self.format_date_str_for_calender_server(DateTools.calc_next_date(end_date), "google")
             # 2. 创建 日历 服务
             service = GoogleAuth.get_service(userinfo.user_name)
             calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
 
             # 3. 连接日历 获得结果
             time_list = GoogleAuth.get_calender_content(service, calendar_id, time_min, time_max)
-
             # 4. 格式化字符串
             time_list_format = self.standard_content_list(userinfo.id, time_list)
 
             # 5. 过滤筛选 结果，日期不在指定范围内的不要
             final_result, missing_during = self.calc_missing_during(time_list_format, start_date, end_date)
+
             return final_result, missing_during
         else:
             print("calender server ["+userinfo.calender_server+"] not support yet" )
