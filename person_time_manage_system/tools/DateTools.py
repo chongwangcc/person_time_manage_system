@@ -225,6 +225,33 @@ def calc_intersection_minutes(start_time1, end_time1, start_time2, end_time2):
     return minutes
 
 
+def get_now_time_str():
+    """
+    获得现在的时间戳
+    :return:
+    """
+    m_time = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
+    return m_time
+
+
+def get_now_date_str():
+    m_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    return m_date
+
+def calc_time_delta_seconds(time1_str, time2_str):
+    """
+    计算两个时间之间差了多少秒
+    :param time1_str:
+    :param time2_str:
+    :return:
+    """
+    time1 = datetime.strptime(time1_str, "%Y-%m-%d %H:%M:%S")
+    time2 = datetime.strptime(time2_str, "%Y-%m-%d %H:%M:%S")
+
+    secords = (time1 - time2).total_seconds()
+    return secords
+
+
 if __name__ == "__main__":
     # dd = gen_week_list_in_days( ["2019-01-01", "2019-01-03","2019-01-03"])
     # print(dd)
@@ -232,7 +259,9 @@ if __name__ == "__main__":
     # print(dd)
     # dd = gen_year_list_in_days(["2019-01-01", "2019-01-03", "2019-01-03"])
     # print(dd)
-    dd = calc_week_num("2019-02-19")
+    # dd = calc_week_num("2019-02-19")
+    # print(dd)
+    dd = calc_time_delta_seconds("2019-05-02 07:22:20", "2019-05-02 07:22:41")
     print(dd)
 
 

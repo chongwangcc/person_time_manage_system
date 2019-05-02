@@ -49,6 +49,10 @@ class CacheCalcTask:
 
     def __str__(self):
         return self.get_key()
+
+    # def __eq__(self, other):
+    #     return self.get_key() == other.get_key()
+
 # SQLite 数据库中 实体结构定义---------------------------
 
 

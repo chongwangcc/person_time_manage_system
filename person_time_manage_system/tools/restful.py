@@ -19,6 +19,7 @@ from flask_socketio import SocketIO, Namespace, emit
 
 from tools import SqlTools
 from tools import BussinessLogic
+from tools import DateTools
 
 
 app = Flask(__name__, static_folder='../static', template_folder="../static/html")
@@ -48,7 +49,7 @@ def weekly_statistics1(date_str):
     t_user = SqlTools.fetch_user_info(current_user.user_name)
     task = BussinessLogic.CacheCalcTask(t_user, "week", monday, sunday)
     # 2.查询缓存
-    result = BussinessLogic.CachCalcService.fetch_cache(task)
+    result = BussinessLogic.CacheCalcService.fetch_cache(task)
     # 3. 构造返回JSON
     return jsonify(result)
 
@@ -66,7 +67,7 @@ def monthly_statistics(date_str):
     t_user = SqlTools.fetch_user_info(current_user.user_name)
     task = BussinessLogic.CacheCalcTask(t_user, "month", first_day, last_day)
     # 2.查询缓存
-    result = BussinessLogic.CachCalcService.fetch_cache(task)
+    result = BussinessLogic.CacheCalcService.fetch_cache(task)
     # 3. 构造返回JSON
     # import json
     # js = json.dumps(result, sort_keys=True, indent=4, separators=(',', ':'))
@@ -87,7 +88,7 @@ def yearly_statistics(date_str):
     t_user = SqlTools.fetch_user_info(current_user.user_name)
     task = BussinessLogic.CacheCalcTask(t_user, "year", first_day, last_day)
     # 2.查询缓存
-    result = BussinessLogic.CachCalcService.fetch_cache(task)
+    result = BussinessLogic.CacheCalcService.fetch_cache(task)
     # 3. 构造结果
     return jsonify(result)
 
@@ -96,29 +97,58 @@ class WebResultFetcher(Namespace):
     """
 
     """
+
+    def __init__(self, namespace=None):
+        super().__init__(namespace)
+        BussinessLogic.ConnectionManager.set_emit_cls(self)
+
+    def emit_info(self, pipe_name, data_dict):
+        # pass
+        emit(pipe_name, data_dict)
+
     def on_connect(self):
-        print(threading.currentThread().getName(), "connect", current_user.user_name)
+        print("1111111111111111111 connect", threading.current_thread().getName(), self)
         pass
 
     def on_disconnect(self):
-        print(threading.currentThread().getName(), "disconnect")
+        print("0000000000000000000 disconnect", threading.current_thread().getName(),self)
         pass
 
     def on_weeksum(self, data):
+        print("22222222222222 on_weeksum", threading.current_thread().getName(),self)
         date_str = data.get('date_str')
-        print(threading.currentThread().getName(), date_str, "on_weeksum")
-        emit("weeksum", {"data": "msg"})
+        monday, sunday = calc_week_begin_end_date(date_str)
+        t_user = SqlTools.fetch_user_info(current_user.user_name)
+        task = BussinessLogic.CacheCalcTask(t_user, "week", monday, sunday)
+        t_dict = BussinessLogic.ConnectionManager.register_task(task)
+        while True:
+            with t_dict["cond"]:
+                print("before wait on_weeksum",t_dict["task"])
+                t_dict["cond"].wait()
+                print("end wait on_weeksum", t_dict["task"])
+                t_dict["callback"](t_dict["task"], t_dict["json"])
 
 
     def on_monthsum(self, data):
         date_str = data.get('date_str')
-        print(threading.currentThread().getName(), date_str, "on_monthsum")
-        emit("monthsum", {"data": "msg"})
+        first_day, last_day = calc_month_begin_end_date(date_str)
+        t_user = SqlTools.fetch_user_info(current_user.user_name)
+        task = BussinessLogic.CacheCalcTask(t_user, "month", first_day, last_day)
+        t_dict = BussinessLogic.ConnectionManager.register_task(task)
+        with t_dict["cond"]:
+            while True:
+                t_dict["cond"].wait()
+                t_dict["callback"](t_dict["task"], t_dict["json"])
 
     def on_yearsum(self, data):
         date_str = data.get('date_str')
-        print(threading.currentThread().getName(), date_str, "on_yearsum")
-        emit("yearsum",{"data":"msg"})
+        first_day, last_day = calc_year_begin_end_date(date_str)
+        t_user = SqlTools.fetch_user_info(current_user.user_name)
+        task = BussinessLogic.CacheCalcTask(t_user, "year", first_day, last_day)
+        t_dict = BussinessLogic.ConnectionManager.register_task(task)
+        with t_dict["cond"]:
+            t_dict["cond"].wait()
+            t_dict["callback"](t_dict["task"], t_dict["json"])
 
 
 socketio.on_namespace(WebResultFetcher('/update'))

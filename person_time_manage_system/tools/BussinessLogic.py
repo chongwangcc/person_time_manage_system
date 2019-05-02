@@ -8,6 +8,11 @@
 # 业务逻辑代码
 import queue
 import threading
+from concurrent.futures import ThreadPoolExecutor,wait,ALL_COMPLETED, FIRST_COMPLETED
+
+# 0. pd 打印调试开关
+import pandas as pd
+pd.set_option('display.max_columns', None)
 
 from tools import CalenderTools
 from tools.Entity import *
@@ -21,20 +26,18 @@ class SetQueue(queue.Queue):
     def _get(self):
         return self.queue.pop()
 
-# 0. pd 打印调试开关
-import pandas as pd
-pd.set_option('display.max_columns', None)
 
 # 一些全局队列
 network_calender_query_queue = SetQueue()    # 网络查询日历的任务队列
 cache_calc_queue = SetQueue()  # 计算缓存任务的队列
-web_cache = {}
-
+web_cache = {}  # json 的缓存数据，样例：key:{"create_time":"", "json":"", "update_call":"", "task":""}
+g_first = True
 
 class QuerayCalenderService:
     """
     处理查询日历的服务类
     """
+
     @staticmethod
     def add_calender_query_task(query_task):
         """
@@ -54,13 +57,14 @@ class QuerayCalenderService:
         查询日历查询队列，网络读取数据
         :return:
         """
+        global g_first
         while True:
             # 1. 阻塞获取  远程查询任务
             query_task = network_calender_query_queue.get(block=True)  # CalenderQueryTask 对象
             if query_task is None:
                 time.sleep(1)
                 continue
-            print("[INFO] start handling query_task [" + str(query_task) + "]")
+            # print("[INFO] start handling query_task [" + str(query_task) + "]")
             # 2. 调用网络层，获得数据
             calender_server = CalenderTools.CalenderServer()
             final_result, missing_during = calender_server.get_time_details(query_task.user_info,
@@ -82,14 +86,13 @@ class QuerayCalenderService:
                                           query_task.end_date,
                                           time_detail_df)
             # 4. 如果更新了，重新计算每日缓存
-            if is_update:
-
-                print(update_date_list)
+            if is_update or g_first:
+                g_first = False
                 t_task = CacheCalcTask(query_task.user_info, "day", query_task.start_date, query_task.end_date)
                 StatisticsCalcService.add_cache_calc_task(t_task)
-                print("[INFO] add  Statistics_task [" + str(t_task) + "]")
+                # print("[INFO] add  Statistics_task [" + str(t_task) + "]")
 
-            print("[INFO] end handling query_task [" + str(query_task) + "]")
+            # print("[INFO] end handling query_task [" + str(query_task) + "]")
 
 
 class StatisticsCalcService:
@@ -125,13 +128,13 @@ class StatisticsCalcService:
         while True:
             # 1. 阻塞获取  cache计算任务
             cache_task = cache_calc_queue.get(block=True)  # CacheCalcTask 对象
-            print("[INFO] start handling Statistics_task [" + str(cache_task) + "]")
+            # print("[INFO] start handling Statistics_task [" + str(cache_task) + "]")
             # 2. 计算缓存
             cache_service = StatisticsCalcService(cache_task)
             cache_service.calc_daily_statistics()
 
             # 3. TODO 将JSON添加到缓存内存中
-            print("[INFO] end handling Statistics_task [" + str(cache_task) + "]")
+            # print("[INFO] end handling Statistics_task [" + str(cache_task) + "]")
 
     @staticmethod
     def md5_my(row):
@@ -179,22 +182,36 @@ class StatisticsCalcService:
 
         # 3.判断要不要重新计算web需要的json数据
         if is_update:
-            CachCalcService.scan_and_update(self.cache_task.user_info.id, update_date_list)
+            CacheCalcService.scan_and_update(self.cache_task.user_info.id, update_date_list)
         return
 
 
-class CachCalcService:
+class CacheCalcService:
     """
     计算 缓存数据 对象
     """
     update_key = []
+
+    @staticmethod
+    def gen_valid_date_str():
+        date_str = DateTools.get_now_date_str()
+        result_list = []
+        result_list.append(DateTools.calc_week_begin_end_date(date_str)[0])
+        result_list.append(DateTools.calc_month_begin_end_date(date_str)[0])
+        result_list.append(DateTools.calc_last_month_begin_end_date(date_str)[0])
+        result_list.append(DateTools.calc_year_begin_end_date(date_str)[0])
+        return result_list
+
     @staticmethod
     def scan_and_update(user_id, update_date_list):
         """
         TODO 扫描计算缓存key, 计算json数据
         :return:
         """
-        CachCalcService.update_key=[]
+        CacheCalcService.update_key=[]
+
+        outdate_cache_key = []  # 过时的缓存数据，移除
+
         for key, value in web_cache.items():
             # 1. 判断数据有没有更新
             start_time_list = []
@@ -211,10 +228,19 @@ class CachCalcService:
                 pass
             # 2. 对于更新后的数据，重新计算缓存
             if start_date_str in start_time_list:
-                CachCalcService.update_key.append(key)
+                CacheCalcService.update_key.append(key)
                 user_info = SqlTools.fetch_user_info(user_name)
                 calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
-                CachCalcService.add_new_cache_calc_task(calc_task)
+                CacheCalcService.add_new_cache_calc_task(calc_task)
+
+            # 3. 检查下缓存中的数据日期范围是否在[本周、上月、本月、本年]
+            # 如果不是的话，从缓存字典中移除
+            if start_date_str not in CacheCalcService.gen_valid_date_str():
+                outdate_cache_key.append(key)
+
+        # 4. 移除过时的json数据，减少内存占用
+        for key in outdate_cache_key:
+            web_cache.pop(key)
 
     @staticmethod
     def calc_weekly_cache(cache_task):
@@ -339,15 +365,19 @@ class CachCalcService:
             # 不计算每天的 统计数据 json
             return False
         elif cache_task.freq in ["week"]:
-            result = CachCalcService.calc_weekly_cache(cache_task)
+            result = CacheCalcService.calc_weekly_cache(cache_task)
         elif cache_task.freq in ["month"]:
-            result = CachCalcService.calc_monthly_cache(cache_task)
+            result = CacheCalcService.calc_monthly_cache(cache_task)
         elif cache_task.freq in ["year"]:
-            result = CachCalcService.calc_yearly_cache(cache_task)
+            result = CacheCalcService.calc_yearly_cache(cache_task)
 
         # 3.保存到缓存对象中
         if result is not None and len(result)>0:
-            web_cache[cache_task.get_key()] = result
+            t_dict = web_cache.setdefault(cache_task.get_key(), None)
+            if t_dict is not None:
+                t_dict["json"] = result
+                ConnectionManager.update_task(cache_task.get_key())
+
         return result
 
     @staticmethod
@@ -376,15 +406,114 @@ class CachCalcService:
             QuerayCalenderService.add_calender_query_task(query_task)
 
         # 2. 查询缓存队列中是否有结果
-        cache_result = web_cache.setdefault(cache_task.get_key(), None)
+        t_dict = web_cache.setdefault(cache_task.get_key(), {})
+        cache_result = t_dict.setdefault("json", None)
         if cache_result is None:
             # 2. 缓存队列为空，新建缓存队列计算任务
-            CachCalcService.add_new_cache_calc_task(cache_task)
-            cache_result = web_cache.setdefault(cache_task.get_key(), None)
+            CacheCalcService.add_new_cache_calc_task(cache_task)
+            t_dict = web_cache.setdefault(cache_task.get_key(), {})
+            cache_result = t_dict.setdefault("json", None)
         if cache_result is None:
             cache_result = {}
         # 3.返回
         return cache_result
+
+    @staticmethod
+    def scan_all():
+        """
+        扫描json ,更新 json串
+        :return:
+        """
+        while True:
+            for key, value in web_cache.items():
+                t_task = value.setdefault("task", None)
+                create_time = value.setdefault("create_time",  None)
+                if t_task is None or create_time is None:
+                    continue
+                if DateTools.calc_time_delta_seconds(DateTools.get_now_time_str(),
+                                                     create_time) < 5*60:
+                    CacheCalcService.fetch_cache(t_task)
+
+            time.sleep(3)
+
+
+class ConnectionManager:
+    """
+    所有客户端断的连接管理，与客户端交互的接口
+    """
+
+    @classmethod
+    def set_emit_cls(cls, emit_object):
+        """
+        设置emit 类名
+        :param emit_object:
+        :return:
+        """
+        cls.emit_obj = emit_object
+
+    @classmethod
+    def register_task(cls, task):
+        """
+
+        :param task:
+        :return:
+        """
+
+        t_dict = web_cache.setdefault(task.get_key(), None)
+        if t_dict is None:
+            t_dict = {}
+            web_cache[task.get_key()] = t_dict
+
+        t_dict["callback"] = cls.call_back
+        t_dict["create_time"] = DateTools.get_now_time_str()
+        t_dict["task"] = task
+        t_dict["cond"] = threading.Condition()
+
+        return t_dict
+
+    @classmethod
+    def unregister_task(cls, task):
+        """
+
+        :param task:
+        :return:
+        """
+        web_cache.pop(task.get_key())
+
+    @classmethod
+    def call_back(cls, task, new_task_data):
+        """
+        回调函数
+        :param task:
+        :param new_task_data:
+        :return:
+        """
+
+        freq = task.freq
+        print("in callback", task.get_key())
+
+        if freq in ["week"]:
+            cls.emit_obj.emit_info("weeksum", {"data": new_task_data})
+        elif freq in ["month"]:
+            cls.emit_obj.emit_info("monthsum", {"data": new_task_data})
+        elif freq in ["year"]:
+            cls.emit_obj.emit_info("yearsum", {"data": new_task_data})
+        else:
+            pass
+
+    @classmethod
+    def update_task(cls, key):
+        """
+        任务的数据已更新, 通知客户端
+        :param key:
+        :return:
+        """
+        t_dict = web_cache.setdefault(key, {})
+        t_callback = t_dict.setdefault("callback", None)
+        if t_callback is not None:
+            print("update_task callback")
+            with t_dict["cond"]:
+                t_dict["cond"].notify()
 
 
 def start():
@@ -397,7 +526,8 @@ def start():
     # 2. 开启线程
     th1 = threading.Thread(target=QuerayCalenderService.calender_query_func)  # 查询calendar 线程
     th2 = threading.Thread(target=StatisticsCalcService.cache_calc_func)  # 查询calendar 线程
-    threads = [th1, th2]
+    th3 = threading.Thread(target=CacheCalcService.scan_all)  # 查询calendar 线程
+    threads = [th1, th2, th3]
     for t in threads:
         t.setDaemon(True)
         t.start()
@@ -408,20 +538,3 @@ def start():
 if __name__ == "__main__":
     #  2. 开启线程
     start()
-
-    # 1.添加一个任务到队列中
-    # user_info = SqlTools.fetch_user_info("cc")
-    # query_task = CalenderQueryTask(user_info, "2019-01-01", "2019-02-28")
-    # QuerayCalenderService.add_calender_query_task(query_task)
-
-    # user_info = SqlTools.fetch_user_info("cc")
-    # calc_task = CacheCalcTask(user_info, "day", "2018-01-01", "2019-02-28")
-    # StatisticsCalcService.add_cache_calc_task(calc_task)
-
-
-    aa = input()
-    # user_info = SqlTools.fetch_userInfo("cc")
-    # task = CacheCalcTask(user_info, "week", "2018-12-30", "2019-01-05")
-    #
-    # calc_service = CachCalcService(web_cache)
-    # calc_service.add_new_cache(task)

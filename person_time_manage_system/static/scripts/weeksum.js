@@ -126,11 +126,8 @@ $(function(){
     // socket.on('weeksum',call_back);
     socket.on('weeksum',function (data) {
          console.log("weeksum")
-     });
-
-     socket.emit('monthsum', {"date_str":date_now});
-     socket.on('monthsum',function (data) {
-         console.log("monthsum")
+        console.log(data)
+        call_back(data.data)
      });
 })
 

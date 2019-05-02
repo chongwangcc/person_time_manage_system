@@ -11,7 +11,9 @@ from flask_login import (current_user, login_required, login_user, logout_user, 
 from tools import BussinessLogic
 from tools import SqlTools
 from tools.restful import app, socketio
+import warnings
 
+warnings.filterwarnings('ignore')
 
 @app.route("/weeksum/", methods=["GET"])
 @login_required

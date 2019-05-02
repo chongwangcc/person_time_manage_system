@@ -468,7 +468,7 @@ class MonthlyCacheCalcSerive:
         try:
             working_df = self.day_details_df[(self.day_details_df["category"] == "学习")
                                             |(self.day_details_df["category"] == "工作")]
-            working_df["effiect_minutes"] = working_df.apply(lambda row:
+            working_df.loc[:, "effiect_minutes"] = working_df.apply(lambda row:
                                                              MonthlyCacheCalcSerive._high_efficient_period_minues(
                                                                  row["week_nums"],
                                                                  row["start_time"],
@@ -476,8 +476,7 @@ class MonthlyCacheCalcSerive:
                                                              ), axis=1)
             t_df_sum = working_df.groupby(["date_str","week_nums"])["effiect_minutes"].sum().reset_index()
 
-
-            t_df_sum["using_rate"] = t_df_sum.apply(axis = 1,func = (lambda row : round(row["effiect_minutes"] /3, 2)
+            t_df_sum.loc[:, "using_rate"] = t_df_sum.apply(axis = 1,func = (lambda row : round(row["effiect_minutes"] /3, 2)
                                                                                     if row["week_nums"]==5
                                                                                     else round(row["effiect_minutes"]/11,2)
                                                                      )
