@@ -27,7 +27,7 @@ app.config['SECRET_KEY'] = '123456'
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app,engineio_logger=True)
 thread = None
 thread_lock = Lock()
 
@@ -102,16 +102,10 @@ class WebResultFetcher(Namespace):
         super().__init__(namespace)
         BussinessLogic.ConnectionManager.set_emit_cls(self)
 
-    def emit_info(self, pipe_name, data_dict):
-        # pass
-        emit(pipe_name, data_dict)
-
     def on_connect(self):
-        print("1111111111111111111 connect", threading.current_thread().getName(), self)
         pass
 
     def on_disconnect(self):
-        print("0000000000000000000 disconnect", threading.current_thread().getName(),self)
         pass
 
     def on_weeksum(self, data):
@@ -126,8 +120,10 @@ class WebResultFetcher(Namespace):
                 print("before wait on_weeksum",t_dict["task"])
                 t_dict["cond"].wait()
                 print("end wait on_weeksum", t_dict["task"])
-                t_dict["callback"](t_dict["task"], t_dict["json"])
-
+                print("before emit on_weeksum", t_dict["task"])
+                emit("weeksum", t_dict["json"])
+                print(t_dict["json"])
+                print("end emit on_weeksum", t_dict["task"])
 
     def on_monthsum(self, data):
         date_str = data.get('date_str')

@@ -33,6 +33,7 @@ cache_calc_queue = SetQueue()  # 计算缓存任务的队列
 web_cache = {}  # json 的缓存数据，样例：key:{"create_time":"", "json":"", "update_call":"", "task":""}
 g_first = True
 
+
 class QuerayCalenderService:
     """
     处理查询日历的服务类
@@ -129,11 +130,13 @@ class StatisticsCalcService:
             # 1. 阻塞获取  cache计算任务
             cache_task = cache_calc_queue.get(block=True)  # CacheCalcTask 对象
             # print("[INFO] start handling Statistics_task [" + str(cache_task) + "]")
-            # 2. 计算缓存
+            # 2. 计算缓存, 更新数据库
             cache_service = StatisticsCalcService(cache_task)
-            cache_service.calc_daily_statistics()
-
-            # 3. TODO 将JSON添加到缓存内存中
+            is_update,update_date_list = cache_service.calc_daily_statistics()
+            # 3. 将JSON添加到缓存内存中
+            # 3.判断要不要重新计算web需要的json数据
+            if is_update:
+                CacheCalcService.scan_and_update(cache_task.user_info.id, update_date_list)
             # print("[INFO] end handling Statistics_task [" + str(cache_task) + "]")
 
     @staticmethod
@@ -179,11 +182,7 @@ class StatisticsCalcService:
                                           self.cache_task.start_date_str,
                                           self.cache_task.end_date_str,
                                           df_final)
-
-        # 3.判断要不要重新计算web需要的json数据
-        if is_update:
-            CacheCalcService.scan_and_update(self.cache_task.user_info.id, update_date_list)
-        return
+        return is_update, update_date_list
 
 
 class CacheCalcService:
@@ -208,10 +207,7 @@ class CacheCalcService:
         TODO 扫描计算缓存key, 计算json数据
         :return:
         """
-        CacheCalcService.update_key=[]
-
-        outdate_cache_key = []  # 过时的缓存数据，移除
-
+        CacheCalcService.update_key = []
         for key, value in web_cache.items():
             # 1. 判断数据有没有更新
             start_time_list = []
@@ -222,25 +218,15 @@ class CacheCalcService:
                 start_time_list = [DateTools.calc_week_begin_end_date(t_data)[0] for t_data in update_date_list]
             elif freq in ["month"]:
                 start_time_list = [DateTools.calc_month_begin_end_date(t_data)[0] for t_data in update_date_list]
-                pass
             elif freq in ["year"]:
                 start_time_list = [DateTools.calc_year_begin_end_date(t_data)[0] for t_data in update_date_list]
-                pass
             # 2. 对于更新后的数据，重新计算缓存
             if start_date_str in start_time_list:
                 CacheCalcService.update_key.append(key)
                 user_info = SqlTools.fetch_user_info(user_name)
-                calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
-                CacheCalcService.add_new_cache_calc_task(calc_task)
-
-            # 3. 检查下缓存中的数据日期范围是否在[本周、上月、本月、本年]
-            # 如果不是的话，从缓存字典中移除
-            if start_date_str not in CacheCalcService.gen_valid_date_str():
-                outdate_cache_key.append(key)
-
-        # 4. 移除过时的json数据，减少内存占用
-        for key in outdate_cache_key:
-            web_cache.pop(key)
+                if user_id == user_info.id:
+                    calc_task = CacheCalcTask(user_info, freq, start_date_str, end_date_str)
+                    CacheCalcService.calc_cache(calc_task)
 
     @staticmethod
     def calc_weekly_cache(cache_task):
@@ -352,7 +338,7 @@ class CacheCalcService:
         # return result
 
     @staticmethod
-    def add_new_cache_calc_task(cache_task):
+    def calc_cache(cache_task):
         """
         添加一条新的 统计缓存任务到队列中
         :param cache_task:
@@ -410,7 +396,7 @@ class CacheCalcService:
         cache_result = t_dict.setdefault("json", None)
         if cache_result is None:
             # 2. 缓存队列为空，新建缓存队列计算任务
-            CacheCalcService.add_new_cache_calc_task(cache_task)
+            CacheCalcService.calc_cache(cache_task)
             t_dict = web_cache.setdefault(cache_task.get_key(), {})
             cache_result = t_dict.setdefault("json", None)
         if cache_result is None:
@@ -424,15 +410,34 @@ class CacheCalcService:
         扫描json ,更新 json串
         :return:
         """
+        # print("scan_all", threading.current_thread())
         while True:
+            outdate_cache_key = []  # 过时的缓存数据，移除
             for key, value in web_cache.items():
                 t_task = value.setdefault("task", None)
                 create_time = value.setdefault("create_time",  None)
                 if t_task is None or create_time is None:
+                    # print("bad task:", t_task)
                     continue
-                if DateTools.calc_time_delta_seconds(DateTools.get_now_time_str(),
-                                                     create_time) < 5*60:
+                if DateTools.calc_time_delta_seconds(
+                        DateTools.get_now_time_str(),
+                        create_time) < 5*60:
+                    # print("valid task ", t_task, create_time)
                     CacheCalcService.fetch_cache(t_task)
+                else:
+                    # print("old task:", t_task)
+                    pass
+
+                # 3. 检查下缓存中的数据日期范围是否在[本周、上月、本月、本年]
+                # 如果不是的话，从缓存字典中移除
+                if t_task.start_date_str not in CacheCalcService.gen_valid_date_str():
+                    outdate_cache_key.append(key)
+
+            # 4. 移除过时的json数据，减少内存占用
+            for key in outdate_cache_key:
+                # todo 删除任务钱， 停止等待socket信号量的线程
+                web_cache.pop(key)
+            # print("scan one epoch done ", len(web_cache), DateTools.get_now_time_str())
 
             time.sleep(3)
 
@@ -463,12 +468,13 @@ class ConnectionManager:
         if t_dict is None:
             t_dict = {}
             web_cache[task.get_key()] = t_dict
+        if t_dict.setdefault("task", None) is None:
+            t_dict["task"] = task
+        if t_dict.setdefault("cond",None) is None:
+            t_dict["cond"] = threading.Condition()
 
-        t_dict["callback"] = cls.call_back
         t_dict["create_time"] = DateTools.get_now_time_str()
-        t_dict["task"] = task
-        t_dict["cond"] = threading.Condition()
-
+        # print("t_dict", t_dict)
         return t_dict
 
     @classmethod
@@ -481,27 +487,6 @@ class ConnectionManager:
         web_cache.pop(task.get_key())
 
     @classmethod
-    def call_back(cls, task, new_task_data):
-        """
-        回调函数
-        :param task:
-        :param new_task_data:
-        :return:
-        """
-
-        freq = task.freq
-        print("in callback", task.get_key())
-
-        if freq in ["week"]:
-            cls.emit_obj.emit_info("weeksum", {"data": new_task_data})
-        elif freq in ["month"]:
-            cls.emit_obj.emit_info("monthsum", {"data": new_task_data})
-        elif freq in ["year"]:
-            cls.emit_obj.emit_info("yearsum", {"data": new_task_data})
-        else:
-            pass
-
-    @classmethod
     def update_task(cls, key):
         """
         任务的数据已更新, 通知客户端
@@ -509,9 +494,8 @@ class ConnectionManager:
         :return:
         """
         t_dict = web_cache.setdefault(key, {})
-        t_callback = t_dict.setdefault("callback", None)
-        if t_callback is not None:
-            print("update_task callback")
+        t_cond = t_dict.setdefault("cond", None)
+        if t_cond is not None:
             with t_dict["cond"]:
                 t_dict["cond"].notify()
 

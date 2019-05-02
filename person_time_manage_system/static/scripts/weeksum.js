@@ -111,24 +111,28 @@ function call_back(data){
     init5("Chart5", data.missing_info)
 }
 
+function main(){
+    $.get("/api/v1/statistics/weekly/all/"+date_now).done(call_back)
+}
+
 $(function(){
     initDate()
     $.get("/api/v1/statistics/weekly/all/"+date_now).done(call_back)
     //每隔10秒查询一次
-    // setInterval(main, 10000);
+    setInterval(main, 10*1000);
 
-    // socket和后台通讯
-    var websocket_url =  document.domain + ':' + location.port + '/update';
-    var socket = io.connect(websocket_url);
-    //发送消息
-    socket.emit('weeksum', {"date_str":date_now});
-    //监听回复的消息
-    // socket.on('weeksum',call_back);
-    socket.on('weeksum',function (data) {
-         console.log("weeksum")
-        console.log(data)
-        call_back(data.data)
-     });
+    // // socket和后台通讯
+    // var websocket_url =  document.domain + ':' + location.port + '/update';
+    // var socket = io.connect(websocket_url);
+    // //发送消息
+    // socket.emit('weeksum', {"date_str":date_now});
+    // //监听回复的消息
+    // // socket.on('weeksum',call_back);
+    // socket.on('weeksum',function (data) {
+    //      console.log("weeksum")
+    //     console.log(data)
+    //     call_back(data.data)
+    //  });
 })
 
 function init0(data){

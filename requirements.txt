@@ -10,3 +10,4 @@ google-auth-oauthlib
 nanorm
 pandas
 ConfigParser
+gunicorn
