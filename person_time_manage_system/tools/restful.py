@@ -93,6 +93,24 @@ def yearly_statistics(date_str):
     return jsonify(result)
 
 
+@app.route("/api/v1/login/google", methods=["post"])
+def login_in_with_google():
+    """
+    使用google登录帐号
+    :return:
+    """
+    print(request.args())
+
+
+@app.route("/api/v1/login/calender_oauth", methods=["get","post"])
+def calender_oauth():
+    """
+    使用google登录帐号
+    :return:
+    """
+    print(request.args())
+
+
 class WebResultFetcher(Namespace):
     """
 
@@ -145,6 +163,7 @@ class WebResultFetcher(Namespace):
         with t_dict["cond"]:
             t_dict["cond"].wait()
             t_dict["callback"](t_dict["task"], t_dict["json"])
+
 
 
 socketio.on_namespace(WebResultFetcher('/update'))

@@ -1,68 +1,76 @@
 <head>
     <title>个人时间管理系统-登陆界面</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="0">
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link href="/static/styles/styles.css" rel="stylesheet" type="text/css" />
-    <link href="/static/styles/demo.css" rel="stylesheet" type="text/css" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="google-signin-client_id"
+          content="391935852788-6vv1p6vc385smv2dhkldf86nql7de6ol.apps.googleusercontent.com">
+    <link href="/static/styles/styles.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/styles/demo.css" rel="stylesheet" type="text/css"/>
     <script src="/static/scripts/Plugin/jquery.min.js"></script>
-	<script type="text/javascript" src="/static/scripts/three.min.js"></script>
-	<script type="text/javascript" src="/static/scripts/login.js"></script>
+    <script type="text/javascript" src="/static/scripts/three.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script type="text/javascript" src="/static/scripts/login.js"></script>
 
     <style type="text/css">
         .bgimg {
             background-image: url(/static/images/bg.png);
             background-size: cover;
-             -webkit-background-size:cover;
+            -webkit-background-size: cover;
             -moz-background-size: cover;
             -o-background-size: cover;
             margin: 0px;
             overflow: hidden;
             position: absolute;
-            top: 0;left: 0;width: 100vw;height: 100vh;
-            text-align: center}
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            text-align: center
+        }
     </style>
 </head>
 <body style="height:100vh;width:100vw;overflow:hidden">
-    <div class="bgimg"></div>
-	<div class="header_center left" style="position:relative">
-        <h2><strong>个人时间管理系统</strong></h2>
+<div class="bgimg"></div>
+<div class="header_center left" style="position:relative">
+    {#        <h2><strong>个人时间管理系统</strong></h2>#}
+</div>
+<div class='login' style="position: absolute;z-index: 10;">
+    <div class='login_title'>
+        <span><center><h3>用户登录</h3></center></span>
     </div>
-	<div class='login' style="position: absolute;z-index: 10;">
-		  <div class='login_title'>
-			<span><center><h3>用户登录</h3></center></span>
-		  </div>
-		  <div class='login_fields'>
-              <form method="post" id="myform" name="myform1" >
-                    <div class='login_fields__user'>
-                      <div class='icon'>
-                        <img alt="" src='/static/images/user_icon_copy.png'>
-                      </div>
-                      <input name="username" id="username" placeholder='用户名' maxlength="32" type='text' autocomplete="off"/>
-                        <div class='validation'>
-                          <img alt="" src='/static/images/tick.png'>
-                        </div>
-                    </div>
-                    <div class='login_fields__password'>
-                      <div class='icon'>
-                        <img alt="" src='/static/images/lock_icon_copy.png'>
-                      </div>
-                      <input name="password" id="password" placeholder='密码' maxlength="32" type='password' autocomplete="off">
-                      <div class='validation'>
-                        <img alt="" src='/static/images/tick.png'>
-                      </div>
-                    </div>
-                    <div class='login_fields__submit'>
-                      <input type='button' onClick="checkCode()" value='登录'>
-                    </div>
-              </form>
-	  </div>
-
-	<div id='container' style="margin-top: 220px;position:relative;z-index:5"></div>
+    <div class='login_fields'>
+        <form method="post" id="myform" name="myform1">
+            <div class='login_fields__user'>
+                <div class='icon'>
+                    <img alt="" src='/static/images/user_icon_copy.png'>
+                </div>
+                <input name="username" id="username" placeholder='用户名' maxlength="32" type='text' autocomplete="off"/>
+                <div class='validation'>
+                    <img alt="" src='/static/images/tick.png'>
+                </div>
+            </div>
+            <div class='login_fields__password'>
+                <div class='icon'>
+                    <img alt="" src='/static/images/lock_icon_copy.png'>
+                </div>
+                <input name="password" id="password" placeholder='密码' maxlength="32" type='password' autocomplete="off">
+                <div class='validation'>
+                    <img alt="" src='/static/images/tick.png'>
+                </div>
+            </div>
+            <div class='login_fields__submit'>
+                <input type='button' onClick="checkCode()" value='登录' style="width:250px">
+            </div>
+        </form>
+        <div class="g-signin2" data-onsuccess="onSignIn"
+             style="padding: 10px 50px;left: 0;right: 0;top: 40px;width:220px;height:40px;"></div>
+    </div>
+    <div id='container' style="margin-top: 220px;position:relative;z-index:5"></div>
 </div>
 
 <script type="text/javascript">

@@ -8,6 +8,7 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+from google_auth_oauthlib.flow import InstalledAppFlow
 import configparser
 
 from tools.SqlTools import fetch_user_info
@@ -161,8 +162,18 @@ def get_calender_content(credential_service, calender_id, min_time, max_time):
     return list_result
 
 
+def gen_calender_auth_url(redirect_uri="http://localhost:9001/api/v1/login/calender_oauth"):
+    """
+    生成google日历获得授权的url
+    :return:
+    :param redirect_uri
+    """
+    flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+    url, t_id = flow.authorization_url()
+    url += "&redirect_uri="+redirect_uri
+    return url,t_id
+
+
 if __name__ == '__main__':
-    credential_service = get_service("mm")
-    calender_id = get_calender_id(credential_service)
-    content = get_calender_content(credential_service, calender_id, "2019-01-15T0:0:0Z", "2019-01-18T0:0:0Z")
-    print(content)
+    url = gen_calender_auth_url()
+    print(url)

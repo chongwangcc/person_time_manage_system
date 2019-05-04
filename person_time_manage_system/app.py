@@ -73,6 +73,16 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
+@app.route("/test", methods=['GET'])
+def test():
+    """
+    打开默认界面
+    :return:
+    """
+    # 判断有没有用户登录
+    return render_template('calendar_test.html')
+
+
 if __name__ == "__main__":
     BussinessLogic.start()
     # app.run(debug=True, host="0.0.0.0", port="9001")
