@@ -254,8 +254,8 @@ def check_user_config(user_name):
     return True
 
 
-def gen_userinfo_url(uri):
-    url = REDIRECT_HOST + "/userinfo"
+def gen_url(uri):
+    url = REDIRECT_HOST + uri
     return url
 
 

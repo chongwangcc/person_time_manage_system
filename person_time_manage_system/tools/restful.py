@@ -35,7 +35,9 @@ thread_lock = Lock()
 
 @login_manager.user_loader
 def load_user(user_name):
-    return SqlTools.fetch_user_info(user_name)
+    m_user = SqlTools.fetch_user_info(user_name)
+    print("load_user", m_user)
+    return m_user
 
 
 @app.route("/api/v1/statistics/weekly/all/<date_str>", methods=["GET"])
@@ -122,7 +124,8 @@ def login_in_with_google():
         # 3.授权信息正确
         pass
 
-    login_user(user_info, remember=True)
+    m_user = SqlTools.fetch_user_info(user_info.user_name)
+    login_user(m_user, remember=True)
 
     # 3. 判断帐号有没有 授权访问google 日历
     # 弹出，授权google日历界面
@@ -136,11 +139,11 @@ def login_in_with_google():
     ret = GoogleAuth.check_user_config(user_info.user_name)
     if not ret:
         return jsonify({"code": 3,
-                        "data": GoogleAuth.gen_userinfo_url("/userinfo")})
+                        "data": GoogleAuth.gen_url("/userinfo")})
 
     # 5. 进入时间日志的统计界面
     return jsonify({"code": 0,
-                    "data": GoogleAuth.gen_userinfo_url("/weeksum")})
+                    "data": GoogleAuth.gen_url("/weeksum")})
 
 
 @app.route("/api/v1/login/calender_oauth", methods=["GET", "POST"])
@@ -158,6 +161,45 @@ def calender_oauth():
         return render_template('login.html')
     else:
         return jsonify({"msg":"login failed"})
+
+
+@app.route("/api/v1/login/baseinfo",  methods=["GET","POST"])
+@login_required
+def get_base_info():
+    """
+    获得用户的基本信息
+    :return:
+    """
+    t_user = SqlTools.fetch_user_info(current_user.user_name)
+    if request.method == 'POST':
+        print(request.values)
+        t_user.user_name = request.form.get("name")
+        t_user.password = request.form.get("password")
+        t_user.calender_server = request.form.get("calender_server")
+        t_user.calender_name = request.form.get("calender_name")
+        t_user.save()
+        print(t_user)
+        login_user(t_user, remember=True)
+
+        result = {
+            "code":0,
+            "data":GoogleAuth.gen_url("/login")
+        }
+    elif request.method == "GET":
+        result = {
+            "code": 0,
+            "data": {
+                "user_name": t_user.user_name,
+                "password" : t_user.password,
+                "calendar_servers": ["google calendar"],
+                "calendar_names": {
+                    "google calendar": ["时间日志", "主日历"]
+                }
+            }
+        }
+
+    return jsonify(result)
+
 
 
 class WebResultFetcher(Namespace):

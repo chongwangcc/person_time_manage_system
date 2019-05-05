@@ -152,7 +152,7 @@ class CalenderServer:
         if userinfo is None:
             return None
 
-        if userinfo.calender_server in ["google"]:
+        if userinfo.calender_server in ["google", "google calendar"]:
             from tools import GoogleAuth
             import httplib2
             # 1.准备参数

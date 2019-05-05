@@ -130,9 +130,10 @@ function onSignIn(googleUser) {
     console.log(result)
 
 	switch (result.code) {
-        case 1:
+        case 0:
             // 成功跳转到统计界面
             window.location.href=result.data;
+            // window.open(result.data)
             break;
         case 2:
             // 没有日历的访问授权，调到授权界面

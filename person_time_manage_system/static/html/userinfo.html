@@ -9,6 +9,7 @@
     <title>账户基本信息确认</title>
     <link rel="stylesheet" type="text/css" href="/static/scripts/Plugin/layui/css/layui.css"/>
     <script src="../../static/scripts/Plugin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../static/scripts/userinfo.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
 <form class="layui-form">
@@ -19,34 +20,35 @@
         <div class="layui-form-item">
             <label class="layui-form-label">用户名</label>
             <div class="layui-input-block">
-                <input type="text" name="name" lay-verify="required" autocomplete="off" placeholder="用户名"
+                <input id="user_name_id" type="text" name="name" lay-verify="required" autocomplete="off"
+                       placeholder="用户名"
                        class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">密码</label>
             <div class="layui-input-block">
-                <input type="text" name="password" lay-verify="required" autocomplete="off" placeholder="密码"
+                <input id="password_id" type="text" name="password" lay-verify="required" autocomplete="off" placeholder="密码"
                        class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">日历服务商</label>
             <div class="layui-input-block">
-                <input type="text" name="calender_server" lay-verify="required" autocomplete="off" placeholder="日历服务商"
-                       class="layui-input">
+                <select name="calender_server" lay-filter="calender_server_id" id="calender_server_id">
+                    </select>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">日历名称</label>
             <div class="layui-input-block">
-                <input type="text" name="calender_name" lay-verify="required" autocomplete="off" placeholder="日历名称"
-                       class="layui-input">
+                <select name="calender_name" lay-filter="calender_name_id" id="calender_name_id">
+                    </select>
             </div>
         </div>
     </fieldset>
     <div class="layui-row layui-col-space15" style="position:fixed;  left:45%;">
-        <button id="add_datasource" lay-submit lay-filter="add_datasource"
+        <button id="confirm_id" lay-submit lay-filter="confirm_id"
                 class="layui-btn layui-btn-small layui-btn-normal">
             <i class="layui-icon">&#xe67c;</i>确认信息
         </button>
