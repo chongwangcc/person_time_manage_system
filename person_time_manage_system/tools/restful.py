@@ -99,7 +99,40 @@ def login_in_with_google():
     使用google登录帐号
     :return:
     """
-    print(request.args())
+    token = request.values.get("id")
+    email = request.values.get("email")
+    name = request.values.get("name")
+    if name is None:
+        name = str(email).split("@")[0]
+    # 1. 检查有没有这个帐号
+    code,user_info = SqlTools.check_user_email_token(email,token)
+    if code == 1:
+        # 1.1 如果没有，创建新帐号
+        user_info = SqlTools.add_user({
+            "name": name,
+            "emal": email,
+            "token": token
+        })
+    elif code == 2:
+        # 2. 用户授权信息不对
+        return jsonify({"code": "4"})
+    elif code == 0:
+        # 3.授权信息正确
+        pass
+
+    # 3. 判断帐号有没有 授权访问google 日历
+    # 弹出，授权google日历界面
+    if not SqlTools.check_calender_token(user_info):
+        return jsonify({"code": "2",
+                        "data": ""})
+
+    # 3. 判断帐号有没有配置“日历、密码”等信息
+
+    # 4. 如果没有，弹出配置日历的窗口
+
+    # 5. 进入时间日志的统计界面
+
+    return jsonify({"code":"0"})
 
 
 @app.route("/api/v1/login/calender_oauth", methods=["get","post"])

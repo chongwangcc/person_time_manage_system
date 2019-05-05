@@ -65,6 +65,65 @@ def insert_default_user():
         userinfo.save()
 
 
+def check_user_email_token(email, token):
+    """
+    检查用户登录信息是否正确
+    :param email
+    :param token
+    :return: 0--授权信息正确，1--用户不存在，2--用户授权信息不对
+    """
+    if token is None or email is None:
+        return 2,None
+    # 1. 获得用户信息
+    user_info = User_Info.get(email=email)
+    if user_info is None:
+        return 1,None
+    # 2. 检查授权是否正确
+    if user_info.auth_token_file == token:
+        return 0, user_info
+    else:
+        return 2,None
+
+
+def add_user(user_info_dict):
+    """
+    添加用户信息
+    :param user_info_dict:
+    :return:
+    """
+    userinfo = User_Info()
+    userinfo.user_name = user_info_dict["name"]
+    userinfo.password = user_info_dict.setdefault("pasword","")
+    userinfo.active = 1
+    userinfo.auth_token_file = user_info_dict.setdefault("pasword","")
+    userinfo.calender_server = user_info_dict.setdefault("calender_server", "")
+    userinfo.calender_name = user_info_dict.setdefault("calender_name", "")
+    userinfo.auth_code = user_info_dict.setdefault("auth_code", "")
+    userinfo.email = user_info_dict.setdefault("email", "")
+
+    # 1. 检查信息是否够了
+
+    # 2. 是否和其它名字冲突了
+
+    userinfo.save()
+
+    return userinfo
+
+
+def check_calender_token(user_info):
+    """
+    检查日历的token是否有效
+    :param user_info:
+    :return:
+    """
+    if user_info is None:
+        return False
+    if user_info.auth_code is None or len(user_info.auth_code) <1:
+        return False
+
+    return True
+
+
 def get_time_details_df(user_id, start_date, end_date):
     """
     获得时间明细的记录
@@ -83,7 +142,7 @@ def get_time_details_df(user_id, start_date, end_date):
     return time_details_df
 
 
-def update_time_detials_df(user_id, start_date_str, end_date_str, df_new):
+def update_time_details_df(user_id, start_date_str, end_date_str, df_new):
     """
     保存dataframe 到数据库中，先删除，后插入
     :param usid_id:

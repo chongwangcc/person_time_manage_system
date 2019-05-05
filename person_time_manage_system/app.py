@@ -15,6 +15,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
+
 @app.route("/weeksum/", methods=["GET"])
 @login_required
 def timesum():

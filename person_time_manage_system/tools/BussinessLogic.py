@@ -82,10 +82,10 @@ class QuerayCalenderService:
                                              + time_detail_df["end_time"].map(str)
             time_detail_df = time_detail_df.drop_duplicates(keep="first")
             # 3. 保存到 数据库中
-            is_update, update_date_list = SqlTools.update_time_detials_df(query_task.user_info.id,
-                                          query_task.start_date,
-                                          query_task.end_date,
-                                          time_detail_df)
+            is_update, update_date_list = SqlTools.update_time_details_df(query_task.user_info.id,
+                                                                          query_task.start_date,
+                                                                          query_task.end_date,
+                                                                          time_detail_df)
             # 4. 如果更新了，重新计算每日缓存
             if is_update or g_first:
                 g_first = False

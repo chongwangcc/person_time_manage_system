@@ -108,12 +108,40 @@ function render() {
 }
 
 function onSignIn(googleUser) {
-  var profile = googleUser.getBasicProfile();
-  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  console.log('Name: ' + profile.getName());
-  console.log('Image URL: ' + profile.getImageUrl());
-  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  	var profile = googleUser.getBasicProfile();
+    var result = (function () {
+        var result;
+        $.ajax({
+               url:"api/v1/login/google",
+                type:'POST',
+                dataType:'json',
+                data:{
+                   "email":profile.getEmail(),
+                    "name":profile.getName(),
+                    "id":profile.getId()
+                },
+                async:false,
+                success:function(json){ // http code 200
+                    result = json
+                }
+            });
+            return result;
+    })();
+    console.log(result)
 
+	switch (result.code) {
+        case 1:
+            // 成功跳转到统计界面
+            break;
+        case 2:
+            // 没有日历的访问授权，调到授权界面
+            break;
+        case 3:
+            // 没有设置基本信息，跳转到设置基本信息界面
+            break;
+        default:
+            // 登录失败，弹出失败框
+            break;
+    }
 
-    // 保存google登录帐号，
 }

@@ -190,36 +190,36 @@ class Everyday_Cache(Model):
 
 
 if __name__ == "__main__":
-    print(Time_Details.get_table_name())
-
-    g_sqlite3_path = "./data/sqlit3.db"
-    set_db_name(g_sqlite3_path)
-    userinfo = User_Info()
-    userinfo.user_name="cc"
-    userinfo.password="123456"
-    userinfo.active=1
-    userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
-    userinfo.calender_server = "google"
-    userinfo.calender_name = "时间日志"
-    userinfo.save()
-
-    userinfo = User_Info()
-    userinfo.user_name="mm"
-    userinfo.password="123456"
-    userinfo.active=1
-    userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
-    userinfo.calender_server = "google"
-    userinfo.calender_name = "时间日志"
-    userinfo.save()
-
-
+    # print(Time_Details.get_table_name())
+    #
+    # g_sqlite3_path = "./data/sqlit3.db"
+    # set_db_name(g_sqlite3_path)
+    # userinfo = User_Info()
+    # userinfo.user_name="cc"
+    # userinfo.password="123456"
+    # userinfo.active=1
+    # userinfo.auth_token_file = r".\data\.credentials\cc_calendar.json"
+    # userinfo.calender_server = "google"
+    # userinfo.calender_name = "时间日志"
+    # userinfo.save()
+    #
+    # userinfo = User_Info()
+    # userinfo.user_name="mm"
+    # userinfo.password="123456"
+    # userinfo.active=1
+    # userinfo.auth_token_file = r".\data\.credentials\mm_calendar.json"
+    # userinfo.calender_server = "google"
+    # userinfo.calender_name = "时间日志"
+    # userinfo.save()
+    #
+    #
+    # # userinfo = User_Info.get(user_name="cc")
+    # # userinfo.delete()
+    # # userinfo = User_Info.get(user_name="mm")
+    # # userinfo.delete()
+    # # print(userinfo)
+    #
     # userinfo = User_Info.get(user_name="cc")
-    # userinfo.delete()
-    # userinfo = User_Info.get(user_name="mm")
-    # userinfo.delete()
+    # print(userinfo.to_dict())
     # print(userinfo)
-
-    userinfo = User_Info.get(user_name="cc")
-    print(userinfo.to_dict())
-    print(userinfo)
-
+    len(None)
