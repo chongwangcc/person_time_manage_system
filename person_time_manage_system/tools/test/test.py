@@ -1,6 +1,8 @@
 from __future__ import print_function
 import datetime
 import pickle
+import httplib2
+import urllib.request
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -36,10 +38,17 @@ def main():
             print("444444444444444444444444")
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
+            print("6666666666666666666666666666")
             pickle.dump(creds, token)
+            print("creds")
     print("5555555555555555555555555555")
+    fanqian_proxy = httplib2.ProxyInfo(
+                        httplib2.socks.PROXY_TYPE_SOCKS5,
+                        "127.0.0.1",
+                        1080)
+    http = httplib2.Http(proxy_info=fanqian_proxy)
     service = build('calendar', 'v3', credentials=creds)
-
+    print("buildbuildbuildbuildbuildbuild")
     # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')

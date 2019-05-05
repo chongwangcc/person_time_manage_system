@@ -3,6 +3,7 @@
 
 import httplib2
 import os
+from random import Random
 
 from apiclient import discovery
 from oauth2client import client
@@ -26,6 +27,7 @@ SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = cf.get("google_calender", "CLIENT_SECRET_FILE")
 APPLICATION_NAME = cf.get("google_calender", "APPLICATION_NAME")
 HOME_DIR = cf.get("google_calender", "TMP_DIR")
+REDIRECT_HOST =  cf.get("google_calender", "REDIRECT_HOST")
 
 has_proxy = cf.getboolean("proxy", "user_proxy")
 if has_proxy:
@@ -36,6 +38,9 @@ if has_proxy:
                     )
 else:
     fanqian_proxy = None
+
+flow_map = {}
+
 
 def get_credentials(user_name):
     """Gets valid user credentials from storage.
@@ -63,6 +68,7 @@ def get_credentials(user_name):
         flow.user_agent = APPLICATION_NAME
         http = httplib2.Http(proxy_info=fanqian_proxy)
         credentials = tools.run_flow(flow, store, flags, http)
+
 
         print('Storing credentials to ' + credential_path)
 
@@ -162,16 +168,96 @@ def get_calender_content(credential_service, calender_id, min_time, max_time):
     return list_result
 
 
-def gen_calender_auth_url(redirect_uri="http://localhost:9001/api/v1/login/calender_oauth"):
+def gen_calender_auth_url_bak(user_name):
     """
     生成google日历获得授权的url
     :return:
     :param redirect_uri
     """
     flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+    flow.redirect_uri = REDIRECT_HOST+"/api/v1/login/calender_oauth"
     url, t_id = flow.authorization_url()
-    url += "&redirect_uri="+redirect_uri
+    # url += "&redirect_uri="+REDIRECT_HOST+"/api/v1/login/calender_oauth"
+    print(url)
+    flow_map[t_id] = {
+        "flow": flow,
+        "user_name": user_name
+    }
     return url,t_id
+
+
+def random_str(randomlength=16):
+    str = ''
+    chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
+    length = len(chars) - 1
+    random = Random()
+    for i in range(randomlength):
+        str+=chars[random.randint(0, length)]
+    return str
+
+
+def gen_calender_auth_url(user_name):
+    """
+    生成google日历获得授权的url
+    :return:
+    :param redirect_uri
+    """
+    redirect_uri = REDIRECT_HOST+"/api/v1/login/calender_oauth"
+    flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES,redirect_uri=redirect_uri)
+    state = random_str()
+    url = flow.step1_get_authorize_url()
+    url += "&state="+state
+    flow_map[state] = {
+        "flow": flow,
+        "user_name": user_name
+    }
+
+    return url
+
+
+def gen_calender_auth_2(state, code):
+    try:
+        # 1. 获得credons_json串
+        http = httplib2.Http(proxy_info=fanqian_proxy)
+        flow = flow_map.get(state)["flow"]
+        cred = flow.step2_exchange(code, http=http)
+        user_name =  flow_map.get(state)["user_name"]
+
+        # 2.  保存授权json到数据库中
+        user_info = fetch_user_info(user_name)
+        user_info.auth_code = cred.to_json()
+        user_info.save()
+
+        return True
+    except:
+        return False
+
+
+def check_user_config(user_name):
+    """
+    检查用户有没有配置基本信息
+    :param user_name:
+    :return:
+    """
+    user_info = fetch_user_info(user_name)
+    if user_info is None:
+        return False
+
+    if user_info.password is None or len(user_info.password)<1:
+        return False
+
+    if user_info.calender_server is None or len(user_info.calender_server)<1:
+        return False
+
+    if user_info.calender_name is None or len(user_info.calender_name)<1:
+        return False
+    return True
+
+
+def gen_userinfo_url(uri):
+    url = REDIRECT_HOST + "/userinfo"
+    return url
+
 
 
 if __name__ == '__main__':

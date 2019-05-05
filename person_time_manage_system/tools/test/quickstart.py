@@ -46,11 +46,16 @@ def get_credentials():
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         if flags:
+            print("111111111111111111111111")
+            print(flags)
             credentials = tools.run_flow(flow, store, flags)
         else: # Needed only for compatibility with Python 2.6
+            print("2222222222222222222222222222222")
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
+
+
 def calender_list_test():
     """
     遍历所有的日历，打印日历名称和ID
@@ -68,7 +73,6 @@ def calender_list_test():
         page_token = calendar_list.get('nextPageToken')
         if not page_token:
             break
-
 
 
 def calender_event_test():

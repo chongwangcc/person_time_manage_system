@@ -95,7 +95,7 @@ def add_user(user_info_dict):
     userinfo.user_name = user_info_dict["name"]
     userinfo.password = user_info_dict.setdefault("pasword","")
     userinfo.active = 1
-    userinfo.auth_token_file = user_info_dict.setdefault("pasword","")
+    userinfo.auth_token_file = user_info_dict.setdefault("token","")
     userinfo.calender_server = user_info_dict.setdefault("calender_server", "")
     userinfo.calender_name = user_info_dict.setdefault("calender_name", "")
     userinfo.auth_code = user_info_dict.setdefault("auth_code", "")

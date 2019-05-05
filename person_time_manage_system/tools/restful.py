@@ -10,6 +10,7 @@
 from threading import Lock
 import time
 import threading
+import json
 
 from flask import Flask, render_template, jsonify, request, redirect
 from flask_login.login_manager import LoginManager
@@ -20,6 +21,7 @@ from flask_socketio import SocketIO, Namespace, emit
 from tools import SqlTools
 from tools import BussinessLogic
 from tools import DateTools
+from tools import GoogleAuth
 
 
 app = Flask(__name__, static_folder='../static', template_folder="../static/html")
@@ -105,43 +107,60 @@ def login_in_with_google():
     if name is None:
         name = str(email).split("@")[0]
     # 1. 检查有没有这个帐号
-    code,user_info = SqlTools.check_user_email_token(email,token)
+    code, user_info = SqlTools.check_user_email_token(email,token)
     if code == 1:
         # 1.1 如果没有，创建新帐号
         user_info = SqlTools.add_user({
             "name": name,
-            "emal": email,
+            "email": email,
             "token": token
         })
     elif code == 2:
         # 2. 用户授权信息不对
-        return jsonify({"code": "4"})
+        return jsonify({"code": 4})
     elif code == 0:
         # 3.授权信息正确
         pass
 
+    login_user(user_info, remember=True)
+
     # 3. 判断帐号有没有 授权访问google 日历
     # 弹出，授权google日历界面
     if not SqlTools.check_calender_token(user_info):
-        return jsonify({"code": "2",
-                        "data": ""})
+        url = GoogleAuth.gen_calender_auth_url(user_info.user_name)
+        return jsonify({"code": 2,
+                        "data": url})
 
-    # 3. 判断帐号有没有配置“日历、密码”等信息
-
-    # 4. 如果没有，弹出配置日历的窗口
+    # 4. 判断帐号有没有配置“日历、密码”等信息
+    # 如果没有，弹出配置日历的窗口
+    ret = GoogleAuth.check_user_config(user_info.user_name)
+    if not ret :
+        return jsonify({"code": 3,
+                        "data": GoogleAuth.gen_userinfo_url("/userinfo")})
 
     # 5. 进入时间日志的统计界面
+    return jsonify({"code": 0,
+                    "data": GoogleAuth.gen_userinfo_url("/weeksum")})
 
-    return jsonify({"code":"0"})
 
-
-@app.route("/api/v1/login/calender_oauth", methods=["get","post"])
+@app.route("/api/v1/login/calender_oauth", methods=["GET", "POST"])
 def calender_oauth():
     """
     使用google登录帐号
     :return:
     """
-    print(request.args())
+
+    state = request.args.get("state")
+    code = request.args.get("code")
+
+    ret = GoogleAuth.gen_calender_auth_2(state, code)
+    if ret:
+        return jsonify({"code": 0})
+    else:
+        return jsonify({"code": 1})
+
+
+
 
 
 class WebResultFetcher(Namespace):
@@ -196,7 +215,6 @@ class WebResultFetcher(Namespace):
         with t_dict["cond"]:
             t_dict["cond"].wait()
             t_dict["callback"](t_dict["task"], t_dict["json"])
-
 
 
 socketio.on_namespace(WebResultFetcher('/update'))

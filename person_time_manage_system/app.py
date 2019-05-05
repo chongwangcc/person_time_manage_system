@@ -69,6 +69,12 @@ def logout():
     return redirect('/login')
 
 
+@app.route("/userinfo", methods=["GET"])
+@login_required
+def userinfo():
+    return render_template("userinfo.html", user_name=current_user.user_name)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404

@@ -132,12 +132,15 @@ function onSignIn(googleUser) {
 	switch (result.code) {
         case 1:
             // 成功跳转到统计界面
+            window.location.href=result.data;
             break;
         case 2:
             // 没有日历的访问授权，调到授权界面
+			window.open(result.data);
             break;
         case 3:
             // 没有设置基本信息，跳转到设置基本信息界面
+			window.location.href=result.data;
             break;
         default:
             // 登录失败，弹出失败框
