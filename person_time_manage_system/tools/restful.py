@@ -134,7 +134,7 @@ def login_in_with_google():
     # 4. 判断帐号有没有配置“日历、密码”等信息
     # 如果没有，弹出配置日历的窗口
     ret = GoogleAuth.check_user_config(user_info.user_name)
-    if not ret :
+    if not ret:
         return jsonify({"code": 3,
                         "data": GoogleAuth.gen_userinfo_url("/userinfo")})
 
@@ -158,9 +158,6 @@ def calender_oauth():
         return jsonify({"code": 0})
     else:
         return jsonify({"code": 1})
-
-
-
 
 
 class WebResultFetcher(Namespace):

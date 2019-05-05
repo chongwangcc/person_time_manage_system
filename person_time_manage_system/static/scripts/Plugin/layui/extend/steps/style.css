@@ -1,0 +1,81 @@
+.step-body{
+	position: relative;
+}
+.step-header{
+	width: 100%;
+	margin: 0 auto;
+}
+.step-header ul{
+	padding: 0;
+}
+.step-header li{
+	list-style-type:none;
+	float: left;
+	position: relative;
+}
+.step-header li p{
+	margin-top: 30px;
+	margin-bottom: 5px;
+	font-size: 14px;
+	color: #555555;
+}
+.step-header li .step-name{
+	position: relative;
+	left: 35px;
+	font-size: 12px;
+	top: 0;
+	line-height: 25px;
+	background-color: #fff;
+	padding: 0 10px;
+}
+.step-header li a{
+	position: absolute;
+	margin: 0 auto;
+	font-size: 12px;
+	color: #777;
+	height: 25px;
+	line-height: 25px;
+	background: url(./images/cell.png) center top no-repeat;
+	display: block;
+	background-color: #FFFFFF;
+	width: 45px;
+	left: 0;
+	top: 0;
+	text-decoration:none;
+	text-align: center;
+}
+.step-header li.step-active a{
+	background: url(./images/cell-active.png) center top  no-repeat ;
+	color: white;
+	background-color: #FFFFFF;
+}
+.step-header li.step-current a{
+	background: url(./images/cell-current.png) center top  no-repeat ;
+	color: white;
+	background-color: #FFFFFF;
+}
+.step-header li.step-active p{
+	color: #58B7FF;
+}
+.step-bar,.step-bar-active{
+	height: 13px;
+	border-radius: 12px;
+}
+.step-bar{
+	background: url(./images/bar-bg.png) ;
+	position: relative;
+	border-radius: 12px;
+	z-index: -1;
+	height: 1px;
+	top: 12.5px;
+}
+.step-bar-active{
+	width: 0;
+	background: url(./images/bar-bg-active.png) ;
+	height: 1px;
+
+}
+.step-list{
+	display: none;
+	clear: both;
+}

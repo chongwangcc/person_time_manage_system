@@ -2,9 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+        <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
     <title>userinfo</title>
+    <link rel="stylesheet" type="text/css" href="/static/scripts/Plugin/layui/extend/steps/style.css"/>
+     <script src="../../static/scripts/Plugin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
+<form class="layui-form">
+    <fieldset class="layui-elem-field site-demo-button"
+              style="margin-top: 20px; margin-bottom: 20px ;margin-left: 20px;margin-right: 20px;">
+        <legend>在线判读数据源信息</legend>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据源名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" lay-verify="required" autocomplete="off" placeholder="数据源名称"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">IP</label>
+            <div class="layui-input-block">
+                <input type="text" readonly="readonly" name="ip" required autocomplete="off"
+                       placeholder="UDP广播"
+                       value="UDP广播" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">端口</label>
+            <div class="layui-input-block">
+                <input type="text" name="port" lay-verify="number" autocomplete="off" placeholder="端口"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密匙</label>
+            <div class="layui-input-block">
+                <input type="text" name="key" autocomplete="off" placeholder="密匙"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" class="layui-textarea" name="remark"></textarea>
+            </div>
+        </div>
+    </fieldset>
+    <div class="layui-row layui-col-space15" style="position:fixed;  left:35%;">
+        <button type="button" id="connect_machine" class="layui-btn layui-btn-small layui-btn-normal">
+            <i class="layui-icon">&#xe64c; </i>连接测试
+        </button>
+        <button id="add_datasource" lay-submit lay-filter="add_datasource"
+                class="layui-btn layui-btn-small layui-btn-normal">
+            <i class="layui-icon">&#xe67c;</i>添加
+        </button>
+    </div>
+</form>
 
 </body>
 </html>
