@@ -155,16 +155,15 @@ def calender_oauth():
 
     ret = GoogleAuth.gen_calender_auth_2(state, code)
     if ret:
-        return jsonify({"code": 0})
+        return render_template('login.html')
     else:
-        return jsonify({"code": 1})
+        return jsonify({"msg":"login failed"})
 
 
 class WebResultFetcher(Namespace):
     """
 
     """
-
     def __init__(self, namespace=None):
         super().__init__(namespace)
         BussinessLogic.ConnectionManager.set_emit_cls(self)
