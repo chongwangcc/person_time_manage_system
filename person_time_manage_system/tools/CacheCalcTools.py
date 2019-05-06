@@ -657,6 +657,10 @@ class YearlyCacheCalcService:
         except:
             xData = []
         xData.sort()
+
+        if everday_df.empty:
+            return
+
         legends = list(set(everday_df["category"]))
         legends.sort()
         sum = [0 for x in xData]
