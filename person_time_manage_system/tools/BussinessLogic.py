@@ -65,7 +65,7 @@ class QuerayCalenderService:
             if query_task is None:
                 time.sleep(1)
                 continue
-            print("[INFO] start handling query_task [" + str(query_task) + "]")
+            # print("[INFO] start handling query_task [" + str(query_task) + "]")
             # 2. 调用网络层，获得数据
             calender_server = CalenderTools.CalenderServer()
             final_result, missing_during = calender_server.get_time_details(query_task.user_info,
@@ -93,7 +93,7 @@ class QuerayCalenderService:
                 StatisticsCalcService.add_cache_calc_task(t_task)
                 # print("[INFO] add  Statistics_task [" + str(t_task) + "]")
 
-            print("[INFO] end handling query_task [" + str(query_task) + "]")
+            # print("[INFO] end handling query_task [" + str(query_task) + "]")
 
 
 class StatisticsCalcService:

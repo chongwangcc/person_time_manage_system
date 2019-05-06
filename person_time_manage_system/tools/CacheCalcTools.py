@@ -70,9 +70,10 @@ class WeeklyCacheCalcService:
         df_sort = self.day_details_df.sort_values(by=["date_str", "start_time"])
         if len(df_sort) <= 1:
             return missing_during
+        print(df_sort)
 
         # 2. 判断有没有漏掉/重叠的时段
-        last_one = datetime.strptime(df_sort.iloc[0]["date_str"] + " " + df_sort.iloc[0]["start_time"], '%Y-%m-%d %H:%M:%S')
+        last_one = datetime.strptime(df_sort.iloc[0]["date_str"] + " " + df_sort.iloc[0]["end_time"], '%Y-%m-%d %H:%M:%S')
         for i, t_time in enumerate(df_sort.iterrows()):
             t_time = t_time[1]
             s_time = datetime.strptime(t_time["date_str"] + " " + t_time["start_time"], '%Y-%m-%d %H:%M:%S')
@@ -94,7 +95,11 @@ class WeeklyCacheCalcService:
                 info = "漏掉"
                 t_d = {"start_time": s_time_str, "end_time": e_time_str, "during": minute, "type": info}
                 missing_during.append(t_d)
-            last_one = datetime.strptime(t_time["date_str"] + " " + t_time["start_time"], '%Y-%m-%d %H:%M:%S')
+            else:
+                print("missing")
+                print("s_time",s_time)
+                print("last_one", last_one)
+            last_one = datetime.strptime(t_time["date_str"] + " " + t_time["end_time"], '%Y-%m-%d %H:%M:%S')
         self.week_cache["missing_info"] = missing_during
 
     def calc_basis_nums(self):
@@ -187,6 +192,7 @@ class WeeklyCacheCalcService:
         self.calc_basis_nums()
         self.calc_sleep_trends()
         self.calc_everyday_category_details()
+        self.calc_missing_during()
 
         # 3.返回结果
         return self.week_cache
