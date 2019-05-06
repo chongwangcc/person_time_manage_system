@@ -1,6 +1,6 @@
 
 //仪表盘初始化
-function dashboard_init(id_str, data1){
+function dashboard_init2(id_str, data1){
     // 番茄始终达标率
     var nums = data1
     //设置番茄始终达标数
@@ -336,6 +336,134 @@ function dashboard_init(id_str, data1){
     });
 }
 
+
+function dashboard_init(id_str, data1){
+    var nums = data1;
+    option = {
+          backgroundColor: "#062a44",
+          series: [{
+            name: '刻度',
+            type: 'gauge',
+            radius: '88%',
+            min:0,//最小刻度
+            max:100,//最大刻度
+            splitNumber: 10, //刻度数量
+            startAngle: 225,
+            endAngle: -45,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                width: 1,
+                color: [[1,'rgba(0,0,0,0)']]
+              }
+            },//仪表盘轴线
+            axisLabel: {
+              show: true,
+              color:'#4d5bd1',
+              distance:25,
+            },//刻度标签。
+            axisTick: {
+              show: true,
+               splitNumber: 5,
+              lineStyle: {
+                // color: '#fff',
+                width: 1,
+              },
+              length: -8
+            },//刻度样式
+            splitLine: {
+              show: true,
+              length: -20,
+              lineStyle: {
+                color: '#fff'
+              }
+            },//分隔线样式
+            detail: {
+              show: false
+            },
+            pointer: {
+              show: false
+            }
+          },{
+              type: 'gauge',
+              radius: '75%',
+              center: ['50%', '50%'],
+
+              splitNumber: 0, //刻度数量
+              startAngle: 225,
+              endAngle: -45,
+              axisLine: {
+                show: true,
+                lineStyle: {
+                  width: 15,
+                  color: [
+                    [
+                      nums/100, new echarts.graphic.LinearGradient(
+                      0, 0, 1, 0, [{
+                      offset: 0,
+                      color: '#5c53de'
+                    },
+                      {
+                        offset: 1,
+                        color: '#18c8ff'
+                      }
+                    ]
+                      )
+                    ],
+                    [
+                      1, '#413e54'
+                    ]
+                  ]
+                }
+              },
+              //分隔线样式。
+              splitLine: {
+                show: false,
+              },
+              axisLabel: {
+                show: false
+              },
+              axisTick: {
+                show: false
+              },
+              pointer: {
+                show: false
+              },
+              title: {
+                show: true,
+                offsetCenter: [0, '-26%'], // x, y，单位px
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 20
+                }
+              },
+            //仪表盘详情，用于显示数据。
+            detail: {
+                show: true,
+                offsetCenter: [0, '16%'],
+                color: '#ffffff',
+                formatter: function(params) {
+                  return params
+                },
+                textStyle: {
+                  fontSize: 44
+                }
+            },
+            data: [{
+                name: "番茄时钟数",
+                value: nums
+                }]
+          }
+          ]
+        };
+
+    var pieChart1 = echarts.init(document.getElementById(id_str));
+
+    pieChart1.setOption(option)
+
+}
+
+
 //柱状图
 function bar_init(id_str, data){
         var category = [];
@@ -633,7 +761,7 @@ function select_bar_init(id_str, data){
 }
 
 //饼状图
-function pie_init(id_str, data1){
+function pie_init2(id_str, data1){
          var scaleData = data1;
          var rich = {
              white: {
@@ -727,6 +855,74 @@ function pie_init(id_str, data1){
              series: seriesObj
          }
 
+         var lineChart = echarts.init(document.getElementById(id_str));
+         lineChart.setOption(option)
+}
+
+
+function pie_init(id_str, data1){
+     var scaleData = data1;
+     var data = [];
+     for (var i = 0; i < scaleData.length; i++) {
+         data.push({
+             value: scaleData[i].value,
+             name: scaleData[i].name,
+             itemStyle: {
+                 normal: {
+                     borderWidth: 5,
+                     shadowBlur: 30,
+                     borderColor: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{
+                         offset: 0,
+                         color: '#7777eb'
+                     }, {
+                         offset: 1,
+                         color: '#70ffac'
+                     }]),
+                     shadowColor: 'rgba(142, 152, 241, 0.6)'
+                 }
+             }
+         });
+     }
+    option = {
+         series: [{
+             type: 'pie',
+             radius: [10, "60%"],
+             center: ['50%', '50%'],
+             roseType: 'radius',
+             color: ['#f2c955', '#00a69d', '#46d185', '#ec5845'],
+             data: data,
+             label: {
+                 normal: {
+                     textStyle: {
+                         fontSize: 14
+                     },
+                     formatter: function(param) {
+                         return param.name + ':\n' + Math.round(param.percent) + '%';
+                     }
+                 }
+             },
+             labelLine: {
+                 normal: {
+                     smooth: true,
+                     lineStyle: {
+                         width: 2
+                     }
+                 }
+             },
+             itemStyle: {
+                 normal: {
+                     shadowBlur: 30,
+                     shadowColor: 'rgba(0, 0, 0, 0.4)'
+                 }
+             },
+
+             animationType: 'scale',
+             animationEasing: 'elasticOut',
+             animationDelay: function(idx) {
+                 return Math.random() * 200;
+             }
+         }]
+     }
          var lineChart = echarts.init(document.getElementById(id_str));
          lineChart.setOption(option)
 }

@@ -1,4 +1,25 @@
 var date_now = getNowFormatDate()
+Date.prototype.format = function(fmt) {
+     var o = {
+        "M+" : this.getMonth()+1,                 //月份
+        "d+" : this.getDate(),                    //日
+        "h+" : this.getHours(),                   //小时
+        "m+" : this.getMinutes(),                 //分
+        "s+" : this.getSeconds(),                 //秒
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度
+        "S"  : this.getMilliseconds()             //毫秒
+    };
+    if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+    }
+     for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+         }
+     }
+    return fmt;
+}
+
 
 function initDate(){
     Date.prototype.Format = function (fmt) { //author: meizz
@@ -37,6 +58,9 @@ function initDate(){
 		},
         onClose: function(dateText, inst) {
             var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            month = parseInt(month)
+            console.log(month+1)
+
             var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
             m_start_date = new Date(year, month, 1);
             m_end_date = new Date(year, month+1, 0);
@@ -48,7 +72,8 @@ function initDate(){
             var tlabel =document.getElementById("id_end_date");
             tlabel.innerHTML=addDate(m_end_date, 0)
 
-            date_now=year+"-"+(month+1)
+            date_now=new Date(year, month, 1).format("yyyy-MM");
+            console.log(date_now)
 
             //调用后台接口
             clearCharts()
