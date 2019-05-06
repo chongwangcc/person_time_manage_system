@@ -156,7 +156,9 @@ function init0(data){
 }
 
 function init5(id_str, data){
+    console.log(data);
         var tbody =document.getElementById(id_str);
+        $("#"+id_str).html("");
         var info = data;
         if (JSON.stringify(info) === '{}' | (typeof info === 'undefined') ){
             return info
@@ -166,27 +168,25 @@ function init5(id_str, data){
             tbody.appendChild(trow);
         }
         function getDataRow(h){
-         var row = document.createElement('tr'); //创建行
+             var row = document.createElement('tr'); //创建行
 
-         var idCell = document.createElement('td'); //创建第一列id
-         idCell.innerHTML = h.start_time; //填充数据
-         row.appendChild(idCell); //加入行  ，下面类似
+             var idCell = document.createElement('td'); //创建第一列id
+             idCell.innerHTML = h.start_time; //填充数据
+             row.appendChild(idCell); //加入行  ，下面类似
 
-         var nameCell = document.createElement('td');//创建第二列name
-         nameCell.innerHTML = h.end_time;
-         row.appendChild(nameCell);
+             var nameCell = document.createElement('td');//创建第二列name
+             nameCell.innerHTML = h.end_time;
+             row.appendChild(nameCell);
 
-         var jobCell = document.createElement('td');//创建第三列job
-         jobCell.innerHTML = h.during;
-         row.appendChild(jobCell);
+             var jobCell = document.createElement('td');//创建第三列job
+             jobCell.innerHTML = h.during;
+             row.appendChild(jobCell);
 
-         var jobCell = document.createElement('td');//创建第三列job
-         jobCell.innerHTML = h.type;
-         row.appendChild(jobCell);
+             var jobCell = document.createElement('td');//创建第三列job
+             jobCell.innerHTML = h.type;
+             row.appendChild(jobCell);
 
-         return row; //返回tr数据
+             return row; //返回tr数据
          }
-
-
 }
 

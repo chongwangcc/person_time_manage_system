@@ -70,7 +70,6 @@ class WeeklyCacheCalcService:
         df_sort = self.day_details_df.sort_values(by=["date_str", "start_time"])
         if len(df_sort) <= 1:
             return missing_during
-        print(df_sort)
 
         # 2. 判断有没有漏掉/重叠的时段
         last_one = datetime.strptime(df_sort.iloc[0]["date_str"] + " " + df_sort.iloc[0]["end_time"], '%Y-%m-%d %H:%M:%S')
@@ -87,7 +86,7 @@ class WeeklyCacheCalcService:
                 info = "重叠"
                 t_d = {"start_time": s_time_str, "end_time": e_time_str, "during": minute, "type": info}
                 missing_during.append(t_d)
-            elif last_one > s_time:
+            elif s_time > last_one:
                 # 漏掉
                 e_time_str = s_time.strftime("%m-%d %H:%M")
                 s_time_str = last_one.strftime("%m-%d %H:%M")
@@ -95,10 +94,6 @@ class WeeklyCacheCalcService:
                 info = "漏掉"
                 t_d = {"start_time": s_time_str, "end_time": e_time_str, "during": minute, "type": info}
                 missing_during.append(t_d)
-            else:
-                print("missing")
-                print("s_time",s_time)
-                print("last_one", last_one)
             last_one = datetime.strptime(t_time["date_str"] + " " + t_time["end_time"], '%Y-%m-%d %H:%M:%S')
         self.week_cache["missing_info"] = missing_during
 

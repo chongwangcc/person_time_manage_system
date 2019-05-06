@@ -13,6 +13,7 @@ from tools.SqlTools import *
 from tools import DateTools
 from datetime import datetime, timedelta, time
 
+
 class CalenderServer:
 
     @staticmethod
