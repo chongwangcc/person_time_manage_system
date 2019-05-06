@@ -339,7 +339,6 @@ function dashboard_init2(id_str, data1){
 
 function dashboard_init(id_str, data1){
     var nums = data1;
-    nums = 20
     option = {
           backgroundColor: "#062a44",
           series: [{
@@ -762,7 +761,7 @@ function select_bar_init(id_str, data){
 }
 
 //饼状图
-function pie_init(id_str, data1){
+function pie_init2(id_str, data1){
          var scaleData = data1;
          var rich = {
              white: {
@@ -856,6 +855,74 @@ function pie_init(id_str, data1){
              series: seriesObj
          }
 
+         var lineChart = echarts.init(document.getElementById(id_str));
+         lineChart.setOption(option)
+}
+
+
+function pie_init(id_str, data1){
+     var scaleData = data1;
+     var data = [];
+     for (var i = 0; i < scaleData.length; i++) {
+         data.push({
+             value: scaleData[i].value,
+             name: scaleData[i].name,
+             itemStyle: {
+                 normal: {
+                     borderWidth: 5,
+                     shadowBlur: 30,
+                     borderColor: new echarts.graphic.LinearGradient(0, 0, 1, 1, [{
+                         offset: 0,
+                         color: '#7777eb'
+                     }, {
+                         offset: 1,
+                         color: '#70ffac'
+                     }]),
+                     shadowColor: 'rgba(142, 152, 241, 0.6)'
+                 }
+             }
+         });
+     }
+    option = {
+         series: [{
+             type: 'pie',
+             radius: [10, "60%"],
+             center: ['50%', '50%'],
+             roseType: 'radius',
+             color: ['#f2c955', '#00a69d', '#46d185', '#ec5845'],
+             data: data,
+             label: {
+                 normal: {
+                     textStyle: {
+                         fontSize: 14
+                     },
+                     formatter: function(param) {
+                         return param.name + ':\n' + Math.round(param.percent) + '%';
+                     }
+                 }
+             },
+             labelLine: {
+                 normal: {
+                     smooth: true,
+                     lineStyle: {
+                         width: 2
+                     }
+                 }
+             },
+             itemStyle: {
+                 normal: {
+                     shadowBlur: 30,
+                     shadowColor: 'rgba(0, 0, 0, 0.4)'
+                 }
+             },
+
+             animationType: 'scale',
+             animationEasing: 'elasticOut',
+             animationDelay: function(idx) {
+                 return Math.random() * 200;
+             }
+         }]
+     }
          var lineChart = echarts.init(document.getElementById(id_str));
          lineChart.setOption(option)
 }
