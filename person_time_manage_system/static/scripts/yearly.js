@@ -106,7 +106,7 @@ $(function(){
     initDate()
     main()
     //每隔10秒查询一次
-    setInterval(main, 10000);
+    setInterval(main, 1000*60);
 })
 
 function init0(data){

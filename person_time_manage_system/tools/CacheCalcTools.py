@@ -563,7 +563,6 @@ class YearlyCacheCalcService:
             during = t_df["nums"].tolist()[0]
         return during
 
-
     def load_day_details(self, is_force=False):
         """
         加载dataframe
@@ -597,7 +596,6 @@ class YearlyCacheCalcService:
             self.day_details_df["year_str"] = self.day_details_df["date_str"].map(lambda x: x[:4])
             group_month = self.day_details_df.groupby(by=["user_id", "year_str", "category", "second_category"])
             self.second_categlory_df = group_month.sum().reset_index()
-
 
     def calc_basic_nums(self):
         """
