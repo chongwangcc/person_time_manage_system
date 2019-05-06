@@ -58,6 +58,15 @@ def login():
     return render_template('login.html')
 
 
+@app.route("/", methods=['GET'])
+def index():
+    """
+    打开默认界面
+    :return:
+    """
+    return redirect("/login")
+
+
 @app.route("/logout", methods=["POST","GET"])
 @login_required
 def logout():
