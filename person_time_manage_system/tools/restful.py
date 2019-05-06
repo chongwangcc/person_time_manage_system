@@ -36,7 +36,6 @@ thread_lock = Lock()
 @login_manager.user_loader
 def load_user(user_name):
     m_user = SqlTools.fetch_user_info(user_name)
-    print("load_user", m_user)
     return m_user
 
 
@@ -172,13 +171,11 @@ def get_base_info():
     """
     t_user = SqlTools.fetch_user_info(current_user.user_name)
     if request.method == 'POST':
-        print(request.values)
         t_user.user_name = request.form.get("name")
         t_user.password = request.form.get("password")
         t_user.calender_server = request.form.get("calender_server")
         t_user.calender_name = request.form.get("calender_name")
         t_user.save()
-        print(t_user)
         login_user(t_user, remember=True)
 
         result = {
@@ -217,7 +214,6 @@ class WebResultFetcher(Namespace):
         pass
 
     def on_weeksum(self, data):
-        print("22222222222222 on_weeksum", threading.current_thread().getName(),self)
         date_str = data.get('date_str')
         monday, sunday = calc_week_begin_end_date(date_str)
         t_user = SqlTools.fetch_user_info(current_user.user_name)
@@ -225,13 +221,8 @@ class WebResultFetcher(Namespace):
         t_dict = BussinessLogic.ConnectionManager.register_task(task)
         while True:
             with t_dict["cond"]:
-                print("before wait on_weeksum",t_dict["task"])
                 t_dict["cond"].wait()
-                print("end wait on_weeksum", t_dict["task"])
-                print("before emit on_weeksum", t_dict["task"])
                 emit("weeksum", t_dict["json"])
-                print(t_dict["json"])
-                print("end emit on_weeksum", t_dict["task"])
 
     def on_monthsum(self, data):
         date_str = data.get('date_str')
