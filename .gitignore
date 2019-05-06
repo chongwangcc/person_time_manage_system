@@ -1,6 +1,7 @@
 *.db
 person_time_manage_system/person_time_manage_system.egg-info/*
 person_time_manage_system/data/.credentials/*
+person_time_manage_system/data/*
 attach_file/*
 .idea/*
 # User-specific stuff
