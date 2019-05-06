@@ -505,8 +505,8 @@ def start():
     开启后台线程
     :return:
     """
-    # 1.创建数据库，插入默认用户信息
-    SqlTools.insert_default_user()
+    # # 1.创建数据库，插入默认用户信息
+    # SqlTools.insert_default_user()
     # 2. 开启线程
     th1 = threading.Thread(target=QuerayCalenderService.calender_query_func)  # 查询calendar 线程
     th2 = threading.Thread(target=StatisticsCalcService.cache_calc_func)  # 查询calendar 线程

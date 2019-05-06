@@ -112,7 +112,7 @@ function onSignIn(googleUser) {
     var result = (function () {
         var result;
         $.ajax({
-               url:"api/v1/login/google",
+               url:"/api/v1/login/google",
                 type:'POST',
                 dataType:'json',
                 data:{

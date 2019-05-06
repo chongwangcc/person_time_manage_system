@@ -157,7 +157,7 @@ def calender_oauth():
 
     ret = GoogleAuth.gen_calender_auth_2(state, code)
     if ret:
-        return render_template('login.html')
+        return redirect('login')
     else:
         return jsonify({"msg":"login failed"})
 
