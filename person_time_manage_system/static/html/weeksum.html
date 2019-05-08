@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="google-signin-client_id"
+      content="391935852788-6vv1p6vc385smv2dhkldf86nql7de6ol.apps.googleusercontent.com">
     <title>个人时间管理系统</title>
     <link rel="shortcut icon" href="./favicon.ico">
     <link rel="stylesheet" href="/static/styles/common.css">
@@ -10,6 +12,7 @@
     <link rel="stylesheet" href="/static/styles/dcalendar.picker.css"/>
     <!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
     <link rel="stylesheet" href="/static/styles/jquery-ui.css"/>
+    <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
 
     <script src="/static/scripts/Plugin/laydate/laydate.js"></script>
     <script src="/static/scripts/Plugin/jquery.min.js"></script>
@@ -36,7 +39,7 @@
     <div class="right nav text_right">
         <ul>
             <li class="nav_active"><i class="nav_1"></i><a href="https://calendar.google.com/calendar/r?tab=wc">记录时间</a> </li>
-            <li class="nav_active"><i class="nav_1"></i><a href="/logout">退出系统</a> </li>
+            <li class="nav_active"><i class="nav_1"></i><a href="javascript:void(0);" onclick="signOut();">退出系统</a> </li>
         </ul>
     </div>
 
