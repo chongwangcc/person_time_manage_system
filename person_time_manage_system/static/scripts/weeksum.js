@@ -156,7 +156,6 @@ function init0(data){
 }
 
 function init5(id_str, data){
-    console.log(data);
         var tbody =document.getElementById(id_str);
         $("#"+id_str).html("");
         var info = data;

@@ -21,7 +21,7 @@ from flask_socketio import SocketIO, Namespace, emit
 from tools import SqlTools
 from tools import BussinessLogic
 from tools import DateTools
-from tools import GoogleAuth_new
+from tools import GoogleAuth
 
 
 app = Flask(__name__, static_folder='../static', template_folder="../static/html")
