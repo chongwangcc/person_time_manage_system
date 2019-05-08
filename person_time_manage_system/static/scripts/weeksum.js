@@ -204,4 +204,5 @@ function onLoad() {
     gapi.auth2.init();
   });
 }
+onLoad()
 
