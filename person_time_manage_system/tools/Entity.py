@@ -69,6 +69,7 @@ class User_Info(Model, UserMixin):
     email = CharField(128)
     auth_code = CharField()
 
+
     def get_id(self):
         return self.user_name
 

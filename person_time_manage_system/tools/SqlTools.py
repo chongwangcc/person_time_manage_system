@@ -6,7 +6,8 @@
 # @File : SqlTools.py 
 # @Software: PyCharm
 
-
+import json
+import datetime
 from tools.Entity import *
 import pandas as pd
 
@@ -120,8 +121,13 @@ def check_calender_token(user_info):
         return False
     if user_info.auth_code is None or len(user_info.auth_code) <1:
         return False
-    return False
-    #return True
+
+    token_expired_time = json.loads(user_info.auth_code)["token_expiry"]
+    now_time = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if token_expired_time < now_time:
+        return False
+
+    return True
 
 
 def get_time_details_df(user_id, start_date, end_date):

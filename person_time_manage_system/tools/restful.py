@@ -104,6 +104,8 @@ def login_in_with_google():
     """
     token = request.values.get("id")
     email = request.values.get("email")
+    print(email)
+    print(token)
     name = request.values.get("name")
     if name is None:
         name = str(email).split("@")[0]
