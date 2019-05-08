@@ -120,8 +120,8 @@ def check_calender_token(user_info):
         return False
     if user_info.auth_code is None or len(user_info.auth_code) <1:
         return False
-
-    return True
+    return False
+    #return True
 
 
 def get_time_details_df(user_id, start_date, end_date):

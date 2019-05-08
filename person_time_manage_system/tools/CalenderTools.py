@@ -154,17 +154,17 @@ class CalenderServer:
             return None
 
         if userinfo.calender_server in ["google", "google calendar"]:
-            from tools import GoogleAuth
+            from tools import GoogleAuth_new
             import httplib2
             # 1.准备参数
             time_min = self.format_date_str_for_calender_server(start_date, "google")
             time_max = self.format_date_str_for_calender_server(DateTools.calc_next_date(end_date), "google")
             # 2. 创建 日历 服务
-            service = GoogleAuth.get_service(userinfo.user_name)
-            calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
+            service = GoogleAuth_new.get_service(userinfo.user_name)
+            calendar_id = GoogleAuth_new.get_calender_id(service, userinfo.calender_name)
 
             # 3. 连接日历 获得结果
-            time_list = GoogleAuth.get_calender_content(service, calendar_id, time_min, time_max)
+            time_list = GoogleAuth_new.get_calender_content(service, calendar_id, time_min, time_max)
             # 4. 格式化字符串
             time_list_format = self.standard_content_list(userinfo.id, time_list)
 
