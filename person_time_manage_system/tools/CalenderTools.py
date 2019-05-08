@@ -164,7 +164,6 @@ class CalenderServer:
                 service = GoogleAuth.get_service(userinfo.user_name)
                 calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
             except Exception as e:
-                e.with_traceback()
                 print(e)
                 user_info.auth_token_file = ""
                 user_info.save()
