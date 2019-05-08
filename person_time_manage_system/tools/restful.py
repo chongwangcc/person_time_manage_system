@@ -129,20 +129,20 @@ def login_in_with_google():
     # 3. 判断帐号有没有 授权访问google 日历
     # 弹出，授权google日历界面
     if not SqlTools.check_calender_token(user_info):
-        url = GoogleAuth_new.gen_calender_auth_url(user_info.user_name)
+        url = GoogleAuth.gen_calender_auth_url(user_info.user_name)
         return jsonify({"code": 2,
                         "data": url})
 
     # 4. 判断帐号有没有配置“日历、密码”等信息
     # 如果没有，弹出配置日历的窗口
-    ret = GoogleAuth_new.check_user_config(user_info.user_name)
+    ret = GoogleAuth.check_user_config(user_info.user_name)
     if not ret:
         return jsonify({"code": 3,
-                        "data": GoogleAuth_new.gen_url("/userinfo")})
+                        "data": GoogleAuth.gen_url("/userinfo")})
 
     # 5. 进入时间日志的统计界面
     return jsonify({"code": 0,
-                    "data": GoogleAuth_new.gen_url("/weeksum")})
+                    "data": GoogleAuth.gen_url("/weeksum")})
 
 
 @app.route("/api/v1/login/calender_oauth", methods=["GET", "POST"])
@@ -155,7 +155,7 @@ def calender_oauth():
     state = request.args.get("state")
     code = request.args.get("code")
 
-    ret = GoogleAuth_new.gen_calender_auth_2(state, code)
+    ret = GoogleAuth.gen_calender_auth_2(state, code)
     if ret:
         return redirect('/login')
     else:
@@ -180,7 +180,7 @@ def get_base_info():
 
         result = {
             "code":0,
-            "data":GoogleAuth_new.gen_url("/login")
+            "data":GoogleAuth.gen_url("/login")
         }
     elif request.method == "GET":
         result = {
