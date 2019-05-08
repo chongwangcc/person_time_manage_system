@@ -124,6 +124,8 @@ def check_calender_token(user_info):
 
     token_expired_time = json.loads(user_info.auth_code)["token_expiry"]
     now_time = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()).strftime("%Y-%m-%dT%H:%M:%SZ")
+    print("token_expired_time",token_expired_time)
+    print("now_time", now_time)
     if token_expired_time < now_time:
         return False
 

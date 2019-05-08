@@ -160,8 +160,15 @@ class CalenderServer:
             time_min = self.format_date_str_for_calender_server(start_date, "google")
             time_max = self.format_date_str_for_calender_server(DateTools.calc_next_date(end_date), "google")
             # 2. 创建 日历 服务
-            service = GoogleAuth.get_service(userinfo.user_name)
-            calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
+            try:
+                service = GoogleAuth.get_service(userinfo.user_name)
+                calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
+            except Exception as e:
+                e.with_traceback()
+                print(e)
+                user_info.auth_token_file = ""
+                user_info.save()
+                return None
 
             # 3. 连接日历 获得结果
             time_list = GoogleAuth.get_calender_content(service, calendar_id, time_min, time_max)
