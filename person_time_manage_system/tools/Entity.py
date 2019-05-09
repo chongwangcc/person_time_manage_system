@@ -90,6 +90,10 @@ class User_Info(Model, UserMixin):
             dict_my[key.replace("`", "")] = value.replace("'", "")
         return dict_my
 
+    def disable_token(self):
+        self.auth_token_file = ""
+        self.save()
+
     @staticmethod
     def is_user_exist():
         """

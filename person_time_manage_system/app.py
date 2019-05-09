@@ -74,6 +74,8 @@ def logout():
     登出界面
     :return:
     """
+    t_user = SqlTools.fetch_user_info(current_user.user_name)
+    t_user.disable_token()
     logout_user()
     return redirect('/login')
 
