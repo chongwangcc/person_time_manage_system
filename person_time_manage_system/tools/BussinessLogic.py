@@ -68,9 +68,14 @@ class QuerayCalenderService:
             # print("[INFO] start handling query_task [" + str(query_task) + "]")
             # 2. 调用网络层，获得数据
             calender_server = CalenderTools.CalenderServer()
-            final_result, missing_during = calender_server.get_time_details(query_task.user_info,
+            ret = calender_server.get_time_details(query_task.user_info,
                                                                             start_date=query_task.start_date,
                                                                             end_date=query_task.end_date)
+            if ret is not None:
+                final_result, missing_during = ret
+            else:
+                #TODO 发现日历授权不对了
+                continue
 
             # 4. 转换为 Dataframe 方便后续处理
             columns = ["user_id", "category", "description", "date_str", "week_nums",
