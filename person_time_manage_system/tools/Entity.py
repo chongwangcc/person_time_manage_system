@@ -91,7 +91,7 @@ class User_Info(Model, UserMixin):
         return dict_my
 
     def disable_token(self):
-        self.auth_token_file = ""
+        self.auth_code = ""
         self.save()
 
     @staticmethod

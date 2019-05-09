@@ -165,8 +165,7 @@ class CalenderServer:
                 calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
             except Exception as e:
                 print(e)
-                user_info.auth_token_file = ""
-                user_info.save()
+                user_info.disable_token()
                 return None
 
             # 3. 连接日历 获得结果
