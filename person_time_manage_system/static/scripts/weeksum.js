@@ -96,12 +96,15 @@ function getNowFormatDate() {
 }
 
 function call_back(data){
+     console.log(data)
+
     // 数据不为空才设置
     if (typeof(data) === "undefined"){
         return
     } else if (JSON.stringify(data) === "{}"){
         return
     }
+
 
     init0(data)
     dashboard_init("Chart1", data.working_and_study_tomato_nums_of_each_day)

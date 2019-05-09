@@ -176,11 +176,12 @@ def update_time_details_df(user_id, start_date_str, end_date_str, df_new):
     # print("time_detials df_new :" + str(len(df_new)))
 
     # 比较两批dataframe 的不同之处
-    delete_df = df_old.append(df_new, sort=True)\
-                        .append(df_new, sort=True)\
+
+    delete_df = df_old.append(df_new)\
+                        .append(df_new)\
                         .drop_duplicates(subset=["only_key","md5"], keep=False)
-    update_df = df_new.append(df_old, sort=True)\
-                        .append(df_old, sort=True)\
+    update_df = df_new.append(df_old)\
+                        .append(df_old)\
                         .drop_duplicates(subset=["only_key", "md5"], keep=False)\
                         .drop_duplicates(subset=["only_key"], keep="first")
     # print("time_detials delete_df :" + str(len(delete_df)))
@@ -242,11 +243,11 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
     # print("everyday_cache df_old :" + str(len(df_old)))
     # print("everyday_cache df_new :" + str(len(df_new)))
     # 比较两批dataframe 的不同之处
-    delete_df = df_old.append(df_new, sort=True) \
-        .append(df_new, sort=True) \
+    delete_df = df_old.append(df_new) \
+        .append(df_new) \
         .drop_duplicates(subset=["only_key", "md5"], keep=False)
-    update_df = df_new.append(df_old, sort=True) \
-        .append(df_old, sort=True) \
+    update_df = df_new.append(df_old) \
+        .append(df_old) \
         .drop_duplicates(subset=["only_key", "md5"], keep=False) \
         .drop_duplicates(subset=["only_key"], keep="first")
     # print("everyday_cache delete_df :" + str(len(delete_df)))
