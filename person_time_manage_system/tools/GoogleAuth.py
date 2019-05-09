@@ -105,7 +105,7 @@ def get_service(user_name):
     # 获得授权文件
     credentials = get_credentials_from_db(user_name)
     if credentials is None:
-        credentials = get_credentials(user_name)
+        return None
 
     # 设置代理
     http = httplib2.Http(proxy_info=fanqian_proxy)

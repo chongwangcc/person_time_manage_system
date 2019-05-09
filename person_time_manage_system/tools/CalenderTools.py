@@ -8,6 +8,7 @@
 
 import hashlib
 import re
+import traceback
 
 from tools.SqlTools import *
 from tools import DateTools
@@ -164,7 +165,7 @@ class CalenderServer:
                 service = GoogleAuth.get_service(userinfo.user_name)
                 calendar_id = GoogleAuth.get_calender_id(service, userinfo.calender_name)
             except Exception as e:
-                print(e)
+                traceback.print_exc()
                 user_info.disable_token()
                 return None
 
