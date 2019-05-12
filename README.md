@@ -30,17 +30,16 @@ python3 app.py
 
 打开网址: ```http://<IP>:9001/login```，(样例网址：```http://www.timesum.top:9001/``` ) 如下图：
 
-![avatar](./_doc/login.PNG)
+![avatar](./_doc/img/login.png)
 
-![avatar](./_doc/every_day_sum.PNG)
+![avatar](./_doc/img/every_day_sum.png)
 
-![avatar](./_doc/every_month_sum.PNG)
+![avatar](./_doc/img/every_month_sum.png)
 
-
-![avatar](./_doc/every_year_sum.PNG)
+![avatar](./_doc/img/every_year_sum.png)
 
 ## 3. 使用说明
-
+[使用说明](./_doc/UseInstruction.md)
 
 ## 4. 代码目录结构说明
 ```
