@@ -28,7 +28,7 @@ cd person_time_manage_system
 python3 app.py
 ```
 
-打开网址: ```http://<IP>:9001/login```， 如下图：
+打开网址: ```http://<IP>:9001/login```，(样例网址：```http://www.timesum.top:9001/``` ) 如下图：
 
 ![avatar](./_doc/login.PNG)
 

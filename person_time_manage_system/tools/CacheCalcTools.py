@@ -446,6 +446,7 @@ class MonthlyCacheCalcSerive:
         """
         living_df = self.day_statics_df[(self.day_statics_df["category"] != "睡觉")
                                         & (self.day_statics_df["category"] != "杂")]
+        living_df = living_df.groupby(by=["date_str"])["during"].sum()
         living_df = living_df.sort_values(by=['date_str'])
 
         living_hours = []
@@ -608,7 +609,7 @@ class YearlyCacheCalcService:
         self.year_cache["working_tomato_nums"] = round(self.get_year_category_minutes("工作")/30, 2)
         self.year_cache["study_tomato_nums"] = round(self.get_year_category_minutes("学习") / 30, 2)
         self.year_cache["workout_nums"] = self.get_year_category_nums("运动")
-        self.year_cache["workout_hours"] = round(self.get_year_category_minutes("运动") / 30, 2)
+        self.year_cache["workout_hours"] = round(self.get_year_category_minutes("运动"), 2)
 
     def calc_words_cloud(self):
         """
