@@ -1,9 +1,9 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*- 
-# @Time : 2019/2/15 15:27 
-# @Author : wangchong 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time : 2019/2/15 15:27
+# @Author : wangchong
 # @Email: chongwangcc@gmail.com
-# @File : CacheTools.py 
+# @File : CacheTools.py
 # @Software: PyCharm
 
 from datetime import datetime, date
@@ -343,7 +343,7 @@ class MonthlyCacheCalcSerive:
         # 1.所有描述合并到一个字符串上
         description = ""
         words_series = month_cache_df["word_cloud"]
-        for index, value in words_series.iteritems():
+        for index, value in words_series.items():
             description += ","
             description += value
 
@@ -620,7 +620,7 @@ class YearlyCacheCalcService:
         # 1.所有描述合并到一个字符串上
         description = ""
         words_series = month_cache_df["word_cloud"]
-        for index, value in words_series.iteritems():
+        for index, value in words_series.items():
             description += ","
             description += value
 

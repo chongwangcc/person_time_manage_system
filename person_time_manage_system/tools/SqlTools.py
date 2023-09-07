@@ -1,13 +1,14 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*- 
-# @Time : 2019/1/29 14:39 
-# @Author : wangchong 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time : 2019/1/29 14:39
+# @Author : wangchong
 # @Email: chongwangcc@gmail.com
-# @File : SqlTools.py 
+# @File : SqlTools.py
 # @Software: PyCharm
 
 import json
 import datetime
+
 from tools.Entity import *
 import pandas as pd
 
@@ -35,28 +36,15 @@ def insert_default_user():
     :return:
     """
     if not User_Info.is_user_exist():
-        # print("insert default user cc, mm")
+        print("insert default user admin")
         global g_sqlite3_path
         set_db_name(g_sqlite3_path)
 
         userinfo = User_Info()
-        userinfo.user_name = "cc"
-        userinfo.password = "123456"
+        userinfo.user_name = "admin"
+        userinfo.password = "admin"
         userinfo.active = 1
         userinfo.auth_token_file = r"./data/.credentials/cc_calendar.json"
-        userinfo.calender_server = "google"
-        userinfo.calender_name = "时间日志"
-        auth_code = None
-        with open(userinfo.auth_token_file, encoding="utf8") as f:
-            auth_code = f.read()
-        userinfo.auth_code = auth_code
-        userinfo.save()
-
-        userinfo = User_Info()
-        userinfo.user_name="mm"
-        userinfo.password="123456"
-        userinfo.active=1
-        userinfo.auth_token_file = r"./data/.credentials/mm_calendar.json"
         userinfo.calender_server = "google"
         userinfo.calender_name = "时间日志"
         auth_code = None
@@ -177,12 +165,8 @@ def update_time_details_df(user_id, start_date_str, end_date_str, df_new):
 
     # 比较两批dataframe 的不同之处
 
-    delete_df = df_old.append(df_new)\
-                        .append(df_new)\
-                        .drop_duplicates(subset=["only_key","md5"], keep=False)
-    update_df = df_new.append(df_old)\
-                        .append(df_old)\
-                        .drop_duplicates(subset=["only_key", "md5"], keep=False)\
+    delete_df = pd.concat([df_old, df_new, df_new]).drop_duplicates(subset=["only_key","md5"], keep=False)
+    update_df = pd.concat([df_old, df_old, df_new]).drop_duplicates(subset=["only_key", "md5"], keep=False)\
                         .drop_duplicates(subset=["only_key"], keep="first")
     # print("time_detials delete_df :" + str(len(delete_df)))
     # print("time_detials update_df :" + str(len(update_df)))
@@ -243,11 +227,9 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
     # print("everyday_cache df_old :" + str(len(df_old)))
     # print("everyday_cache df_new :" + str(len(df_new)))
     # 比较两批dataframe 的不同之处
-    delete_df = df_old.append(df_new) \
-        .append(df_new) \
+    delete_df = pd.concat([df_old, df_new, df_new]) \
         .drop_duplicates(subset=["only_key", "md5"], keep=False)
-    update_df = df_new.append(df_old) \
-        .append(df_old) \
+    update_df =pd.concat([df_old, df_old, df_new]) \
         .drop_duplicates(subset=["only_key", "md5"], keep=False) \
         .drop_duplicates(subset=["only_key"], keep="first")
     # print("everyday_cache delete_df :" + str(len(delete_df)))
@@ -266,7 +248,64 @@ def update_everyday_cache_df(user_id, start_date_str, end_date_str, df_new):
     return is_update, update_date_list
 
 
+def insert_default_data():
+    import random
+    import tools.DateTools as DateTools
+    from tools.DateTools import get_now_date_str
+    import string
+    # 1. 插入一些虚拟的假数据进去
+    # 4. 转换为 Dataframe 方便后续处理
+    columns = ["user_id", "category", "description", "date_str", "week_nums",
+               "start_time", "end_time", "during", "second_category", "md5"]
+    time_detail_df = pd.DataFrame([], columns=columns)
+    time_detail_df["user_id"] = [1 for i in range(100)]
+    time_detail_df["category"] = [random.choice(["学习", "工作", "睡觉", "运动", "杂"]) for i in range(100)]
+    time_detail_df["description"] = ["aaaa" for i in range(100)]
+    time_detail_df["date_str"] = [get_now_date_str() for i in range(100)]
+    time_detail_df["week_nums"] = [1 for i in range(100)]
+    time_detail_df["start_time"] = [random.choice(["00", "01", "02", "03", "04"])+":00:00" for i in range(100)]
+    time_detail_df["end_time"] = [random.choice(["10", "11", "12", "13", "14"])+":00:00" for i in range(100)]
+    time_detail_df["during"] = [330 for i in range(100)]
+    time_detail_df["second_category"] = [random.choice(["看书", "写代码", "跑步"]) for i in range(100)]
+    time_detail_df["md5"] = [''.join(random.sample(string.ascii_letters + string.digits, 32)) for i in range(100)]
+    time_detail_df["only_key"] = time_detail_df["user_id"].map(str) \
+                                 + time_detail_df["date_str"].map(str) \
+                                 + time_detail_df["start_time"].map(str) \
+                                 + time_detail_df["end_time"].map(str)
+    time_detail_df = time_detail_df.drop_duplicates(keep="first")
+    # 3. 保存到 数据库中
+    is_update, update_date_list = update_time_details_df(1,get_now_date_str(),get_now_date_str(),time_detail_df)
+
+
+    # 4. 分组统计结果
+    group_day = time_detail_df.groupby(by=["date_str", "category"])
+    during_sum_df = group_day["during"].sum().reset_index()
+    description_df = group_day["description"].aggregate(lambda x: ",".join(x)).reset_index()
+    count_df = group_day["during"].count().reset_index()
+    df_final = during_sum_df
+    df_final["word_cloud"] = description_df["description"]
+    df_final["nums"] = count_df["during"]
+    df_final["user_id"] = 1
+    df_final["year_str"] = df_final["date_str"].map(lambda  x : str(x)[:4])
+    df_final["month_str"] = df_final["date_str"].map(lambda x: str(x)[:7])
+    df_final["week_start_str"] = df_final["date_str"].map(lambda x: DateTools.calc_week_begin_end_date(x)[0])
+    df_final["week_end_str"] = df_final["date_str"].map(lambda x: DateTools.calc_week_begin_end_date(x)[1])
+    df_final["only_key"] = df_final["user_id"].map(str)\
+                               + df_final["date_str"].map(str) \
+                               + df_final["category"].map(str)
+
+    df_final["md5"] = df_final.apply(lambda x: "".join(random.sample(string.ascii_letters + string.digits, 32)) , axis=1)
+
+    # 2. 保存缓存到数据库中
+    is_update, update_date_list = update_everyday_cache_df(1,
+                                                           get_now_date_str(),
+                                                           get_now_date_str(),
+                                      df_final)
+
+
+
 if __name__ == "__main__":
+    print(len("0c6dd47c4d41bbb4e81acbb1d70a7c84"))
     pass
     # create_table("drop")
     # create_table()
@@ -288,6 +327,7 @@ if __name__ == "__main__":
     # de = get_time_details(3, start_date="2019-01-01", end_date="2019-01-01")
     # print(de)
     insert_default_user()
+    insert_default_data()
 
     print(User_Info.is_user_exist())
 

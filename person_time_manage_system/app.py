@@ -1,9 +1,9 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*- 
-# @Time : 2019/1/16 14:02 
-# @Author : wangchong 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time : 2019/1/16 14:02
+# @Author : wangchong
 # @Email: chongwangcc@gmail.com
-# @File : App.py 
+# @File : App.py
 # @Software: PyCharm
 
 from flask import Flask, render_template, jsonify, request, redirect
@@ -40,6 +40,7 @@ def login():
     打开默认界面
     :return:
     """
+    print("login")
     if request.method == 'POST':
         user_name = request.form["username"]
         password = request.form["password"]
@@ -91,17 +92,7 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
-@app.route("/test", methods=['GET'])
-def test():
-    """
-    打开默认界面
-    :return:
-    """
-    # 判断有没有用户登录
-    return render_template('calendar_test.html')
-
-
 if __name__ == "__main__":
     BussinessLogic.start()
-    # app.run(debug=True, host="0.0.0.0", port="9001")
+    print("open by chrome.  http://127.0.0.1:9001.  login in by default user:  admin admin")
     socketio.run(app, debug=False,host="0.0.0.0", port=9001)

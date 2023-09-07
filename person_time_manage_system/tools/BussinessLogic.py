@@ -1,9 +1,9 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*- 
-# @Time : 2019/2/11 15:52 
-# @Author : wangchong 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time : 2019/2/11 15:52
+# @Author : wangchong
 # @Email: chongwangcc@gmail.com
-# @File : BussinessLogic.py 
+# @File : BussinessLogic.py
 # @Software: PyCharm
 # 业务逻辑代码
 import queue
@@ -513,10 +513,11 @@ def start():
     # # 1.创建数据库，插入默认用户信息
     # SqlTools.insert_default_user()
     # 2. 开启线程
-    th1 = threading.Thread(target=QuerayCalenderService.calender_query_func)  # 查询calendar 线程
-    th2 = threading.Thread(target=StatisticsCalcService.cache_calc_func)  # 查询calendar 线程
-    th3 = threading.Thread(target=CacheCalcService.scan_all)  # 查询calendar 线程
-    threads = [th1, th2, th3]
+    # th1 = threading.Thread(target=QuerayCalenderService.calender_query_func)  # 查询calendar 线程
+    th2 = threading.Thread(target=StatisticsCalcService.cache_calc_func)  # 计算缓存 线程
+    th3 = threading.Thread(target=CacheCalcService.scan_all)  # 扫描计算任务 线程
+    # threads = [th1, th2, th3]
+    threads = [th2, th3]
     for t in threads:
         t.setDaemon(True)
         t.start()
